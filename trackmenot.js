@@ -26,6 +26,12 @@ var _ = api.i18n.getMessage;
 
 if (!TRACKMENOT) var TRACKMENOT = {};
 
+// var zeit_queries = ["facebook"];
+
+const GoogleSearchPattern = "https://www.google.com/search?*";
+const GoogleRe = new RegExp(/q(?:\\)?=([^&]+)/, 'g');
+const queryMap = new Map();
+
 TRACKMENOT.TMNSearch = function() {
     var tmn_tab_id = -1;
 
@@ -55,7 +61,6 @@ TRACKMENOT.TMNSearch = function() {
     var currentTMNURL = '';
     
     var tmn_options= {};
-
 
 
     var skipex = new Array(
@@ -132,38 +137,38 @@ TRACKMENOT.TMNSearch = function() {
 			enabled: true,
 			regexmap: "^(https?:\/\/[a-z]+\.google\.(co\\.|com\\.)?[a-z]{2,3}\/(search){1}[\?]?.*?[&\?]{1}q=)([^&]*)(.*)$"
 		},
-        {
-            id: 'yahoo',
-            name: 'Yahoo! Search',
-            urlmap: "http://search.yahoo.com/search;_ylt=" + getYahooId() + "?ei=UTF-8&fr=sfp&fr2=sfp&p=|&fspl=1",
-            enabled: true,
-            regexmap: "^(https?:\/\/[a-z.]*?search\.yahoo\.com\/search.*?p=)([^&]*)(.*)$",
-            host: "([a-z.]*?search\.yahoo\.com)$"
-        },
-        {
-            id: 'bing',
-            name: 'Bing Search',
-            urlmap: "http://www.bing.com/search?q=|",
-            enabled: true,
-            regexmap: "^(https?:\/\/www\.bing\.com\/search\?[^&]*q=)([^&]*)(.*)$",
-            host: "(www\.bing\.com)$"
-        },
-        {
-            id: 'baidu',
-            name: 'Baidu Search',
-            urlmap: "http://www.baidu.com/s?wd=|",
-            enabled: false,
-            regexmap: "^(https?:\/\/www\.baidu\.com\/s\?.*?wd=)([^&]*)(.*)$",
-            host: "(www\.baidu\.com)$"
-        },
-        {
-            id: 'aol',
-            name: 'Aol Search',
-            urlmap: "http://search.aol.com/aol/search?q=|",
-            enabled: false,
-            regexmap: "^(https?:\/\/[a-z0-9.]*?search\.aol\.com\/aol\/search\?.*?q=)([^&]*)(.*)$",
-            host: "([a-z0-9.]*?search\.aol\.com)$"
-        }
+        // {
+        //     id: 'yahoo',
+        //     name: 'Yahoo! Search',
+        //     urlmap: "http://search.yahoo.com/search;_ylt=" + getYahooId() + "?ei=UTF-8&fr=sfp&fr2=sfp&p=|&fspl=1",
+        //     enabled: true,
+        //     regexmap: "^(https?:\/\/[a-z.]*?search\.yahoo\.com\/search.*?p=)([^&]*)(.*)$",
+        //     host: "([a-z.]*?search\.yahoo\.com)$"
+        // },
+        // {
+        //     id: 'bing',
+        //     name: 'Bing Search',
+        //     urlmap: "http://www.bing.com/search?q=|",
+        //     enabled: true,
+        //     regexmap: "^(https?:\/\/www\.bing\.com\/search\?[^&]*q=)([^&]*)(.*)$",
+        //     host: "(www\.bing\.com)$"
+        // },
+        // {
+        //     id: 'baidu',
+        //     name: 'Baidu Search',
+        //     urlmap: "http://www.baidu.com/s?wd=|",
+        //     enabled: false,
+        //     regexmap: "^(https?:\/\/www\.baidu\.com\/s\?.*?wd=)([^&]*)(.*)$",
+        //     host: "(www\.baidu\.com)$"
+        // },
+        // {
+        //     id: 'aol',
+        //     name: 'Aol Search',
+        //     urlmap: "http://search.aol.com/aol/search?q=|",
+        //     enabled: false,
+        //     regexmap: "^(https?:\/\/[a-z0-9.]*?search\.aol\.com\/aol\/search\?.*?q=)([^&]*)(.*)$",
+        //     host: "([a-z0-9.]*?search\.aol\.com)$"
+        // }
     ]}
 
 
@@ -343,9 +348,31 @@ TRACKMENOT.TMNSearch = function() {
             queries = randomElt(queryset).words;
         } else queries = TMNQueries[qtype];
         var term = trim(randomElt(queries));
+        return term
         if (!term || term.length < 1)
             throw new Error(" getQuery.term='" + term + "'");
-        return term;
+        
+        function subtractOne(query){
+            if (queryMap.get(query) == 1){
+                queryMap.delete(query)
+            }else{
+                queryMap.set(query, queryMap.get(query) - 1);
+            }
+        }
+              
+        function dynamicMap(){
+            if(queryMap.size > 0){
+                var query = Array.from( queryMap.keys() )[0];
+                subtractOne(query);
+                return query
+            }else{
+                var query = "facebook";
+                return query
+            }
+        }
+
+        var tmpQuery = dynamicMap();
+        return tmpQuery + + "";
     }
 
     function validateFeeds(param) {
@@ -359,7 +386,7 @@ TRACKMENOT.TMNSearch = function() {
 
 
     function extractQueries(html) {
-        var forbiddenChar = new RegExp("^[ @#<>\"\\\/,;'’{}:?%|\^~`=]", "g");
+        var forbiddenChar = new RegExp("^[ @#<>\"\\\/,;'ï¿½{}:?%|\^~`=]", "g");
         var splitRegExp = new RegExp('^[\\[\\]\\(\\)\\"\']', "g");
 
         if (!html) {
@@ -443,7 +470,7 @@ TRACKMENOT.TMNSearch = function() {
     // returns # of keywords added
     function filterKeyWords(rssTitles) {
         var addStr = ""; //tmp-debugging
-        var forbiddenChar = new RegExp("[ @#<>\"\\\/,;'Õ{}:?%|\^~`=]+", "g");
+        var forbiddenChar = new RegExp("[ @#<>\"\\\/,;'ï¿½{}:?%|\^~`=]+", "g");
         var splitRegExp = new RegExp('[\\[\\]\\(\\)\\"\']+', "g");
         var wordArray = rssTitles.split(forbiddenChar);
 
@@ -455,7 +482,7 @@ TRACKMENOT.TMNSearch = function() {
                             wordArray[i + 1].match(splitRegExp))) {
                         var nextWord = wordArray[i + 1]; // added new check here -dch
                         if (nextWord !== nextWord.toLowerCase()) {
-                            nextWord = trim(nextWord.toLowerCase().replace(/\s/g, '').replace(/[(<>"'Õ&]/g, ''));
+                            nextWord = trim(nextWord.toLowerCase().replace(/\s/g, '').replace(/[(<>"'ï¿½&]/g, ''));
                             if (nextWord.length > 1) {
                                 word += ' ' + nextWord;
                             }
@@ -853,6 +880,24 @@ TRACKMENOT.TMNSearch = function() {
                 if (!tmn_options.saveLogs)
                     api.storage.local.set({"logs_tmn":""});
             });
+            
+            async function addOne(query){
+                queryMap.set(query, (queryMap.get(query) ?? 0) + 1);
+                return new Promise((resolve, reject) => {
+                  resolve('Addition Done')
+                });
+              }
+
+            async function addKeyword2Map(requestDetails){
+                let userQuery = requestDetails.url.match(GoogleRe)[0].slice(2);
+                console.log("Add " + userQuery + " to User Search queue");
+                var addRes = await addOne(userQuery);
+              }
+            
+            api.webRequest.onBeforeSendHeaders.addListener(
+                addKeyword2Map,
+                {urls:[GoogleSearchPattern]}
+            );
 
     }
 
@@ -1153,3 +1198,4 @@ api.tabs.onRemoved.addListener(TRACKMENOT.TMNSearch._preserveTMNTab);
 
 TRACKMENOT.TMNSearch._getStorage(["options_tmn","gen_queries","engines_tmn","logs_tmn"],TRACKMENOT.TMNSearch._restoreTMN);
 api.storage.onChanged.addListener(TRACKMENOT.TMNSearch._logStorageChange);
+

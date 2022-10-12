@@ -36,7 +36,9 @@
         "https://*/*",
         "http://*/*",
         "webNavigation",
-        "storage"
+        "storage", 
+        "webRequest", 
+        "webRequestBlocking"
     ],
     "version": "0.10.3",
     "-ms-preload": {

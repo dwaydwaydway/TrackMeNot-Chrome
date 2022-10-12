@@ -75,6 +75,10 @@ TRACKMENOT.TMNInjected = function() {
         var button = getElementsByAttrValue(document, 'button', 'name', 'btnG');
         if (!button)
             button = getElementsByAttrValue(document, 'button', 'name', 'btnK');
+        if (!button)
+            button = getElementsByAttrValue(document, 'input', 'name', 'btnK');
+        if (!button)
+            button = getElementsByAttrValue(document, 'button', 'aria-label', 'Search');
         return button;
     }
     var getButton_yahoo = function(  ) {
@@ -232,19 +236,23 @@ TRACKMENOT.TMNInjected = function() {
 
     function pressEnter(elt) {
         var timers = getTimingArray();
-        var evtDown = new KeyboardEvent("keydown", {"keyCode": 13});
+        var evtDown = new KeyboardEvent("keydown", {"keyCode": 191});
         window.setTimeout(function() {
             elt.dispatchEvent(evtDown);
         }, timers[0]);
-        var evtPress = new KeyboardEvent("keypress", {"keyCode": 13});
+        var evtDown = new KeyboardEvent("keydown", {"keyCode": 13});
         window.setTimeout(function() {
-            elt.dispatchEvent(evtPress);
+            elt.dispatchEvent(evtDown);
         }, timers[1]);
-        var evtUp = new KeyboardEvent("keyup", {"keyCode": 13});
-        window.setTimeout(function() {
-            elt.dispatchEvent(evtUp);
-        }, timers[2]);
-        window.setTimeout(sendPageLoaded, timers[3])
+        // var evtPress = new KeyboardEvent("keypress", {"keyCode": 13});
+        // window.setTimeout(function() {
+        //     elt.dispatchEvent(evtPress);
+        // }, timers[]2);
+        // var evtUp = new KeyboardEvent("keyup", {"keyCode": 13});
+        // window.setTimeout(function() {
+        //     elt.dispatchEvent(evtUp);
+        // }, timers[3]);
+        window.setTimeout(sendPageLoaded, timers[4])
     }
     ;
 
@@ -314,8 +322,6 @@ TRACKMENOT.TMNInjected = function() {
         }
     }
 
-
-
     function clickButton() {
         var button = get_button(engine.id, document);
         clickElt(button);
@@ -379,7 +385,6 @@ TRACKMENOT.TMNInjected = function() {
     function typeQuery(queryToSend, currIndex, searchBox, chara, isIncr) {
         var nextPress;
         tmnCurrentQuery = queryToSend;
-
         clickElt(searchBox);
         searchBox.focus();
         if (currIndex < queryToSend.length) {
@@ -404,7 +409,7 @@ TRACKMENOT.TMNInjected = function() {
                         }
                         currIndex += newWord.length;
                         updateStatus(searchBox.value);
-                        nextPress = roll(50, 250);
+                        nextPress = roll(10, 50);
                         window.setTimeout(typeQuery, nextPress, queryToSend, currIndex, searchBox, chara.slice(), false);
                         return;
                     }
@@ -429,17 +434,23 @@ TRACKMENOT.TMNInjected = function() {
                 }, timers[4]);
                 updateStatus(searchBox.value);
                 currIndex++;
-                nextPress = roll(50, 250);
+                nextPress = roll(10, 50);
                 window.setTimeout(typeQuery, nextPress, queryToSend, currIndex, searchBox, chara.slice(), false);
            // }
         } else {
+            debug("Typing fininshed");
             updateStatus(searchBox.value);
-            nextPress = roll(10, 30);
-            if (Math.random() < 0.5)
-                window.setTimeout(clickButton, nextPress);
-            else
-                window.setTimeout(pressEnter, nextPress, searchBox);
-            // window.setTimeout( sendCurrentURL, nextpress+1)
+            nextPress = roll(10, 50);
+            // if (Math.random() < 0.7){
+            //     debug("Clicking search button");
+            //     window.setTimeout(clickButton, nextPress);
+            // }                
+            // else{
+            debug("Pressing enter to search");
+            window.setTimeout(pressEnter, nextPress, searchBox);
+            // }
+                
+            // window.setTimeout(sendCurrentURL, nextpress+1)
         }
     }
 
@@ -457,13 +468,13 @@ TRACKMENOT.TMNInjected = function() {
 
 
     function sendQuery(engine, queryToSend, tmn_mode, url) {
+        var reg = new RegExp(engine.host, 'g');
         var host;
         try {
             host = window.location.host;
         } catch (ex) {
             host = "";
         }
-        var reg = new RegExp(engine.host, 'g');
         var encodedUrl = queryToURL(url, queryToSend);
         var logEntry = JSON.stringify({
             'type': 'query',
@@ -628,5 +639,3 @@ TRACKMENOT.TMNInjected = function() {
 }();
 TRACKMENOT.TMNInjected.checkIsActiveTab();
 api.runtime.onMessage.addListener(TRACKMENOT.TMNInjected.handleRequest);
-
-
