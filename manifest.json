@@ -36,11 +36,14 @@
         "https://*/*",
         "http://*/*",
         "webNavigation",
-        "storage"
+        "storage",
+        "webRequest",
+        "webRequestBlocking"
     ],
     "version": "0.10.3",
     "-ms-preload": {
         "backgroundScript": "backgroundScriptsAPIBridge.js",
         "contentScript": "contentScriptsAPIBridge.js"
-    }
+    },
+    "devtools_page": "devtools.html"
 }
