@@ -56,6 +56,7 @@ TRACKMENOT.TMNSearch = function() {
     
     var tmn_options= {};
     
+    var logSet = new Set();
 
 
     var skipex = new Array(
@@ -81,7 +82,7 @@ TRACKMENOT.TMNSearch = function() {
     }
 
     function cerr(msg, e) {
-        var txt = "[ERROR in trackmenot.js] " + msg;
+        var txt = "" + msg;
         if (e) {
             txt += "\n" + e;
             if (e.message) txt += " | " + e.message;
@@ -234,7 +235,7 @@ TRACKMENOT.TMNSearch = function() {
         } catch (ex) {
             add_log({
                 'type': 'ERROR',
-                'query': '[ERROR in trackmenot.js] Can no create TMN tab:' + ex.message,
+                'query': 'Can no create TMN tab:' + ex.message,
                 'engine': engine, 
             });
             cerr('Can no create TMN tab:', ex);
@@ -596,7 +597,7 @@ TRACKMENOT.TMNSearch = function() {
 		} catch (ex){
             add_log({
                 'type': 'ERROR',
-                'query': "[ERROR in trackmenot.js] browserAction are not supported on mobile",
+                'query': "browserAction are not supported on mobile",
                 'engine': engine, 
             });
 			console.log("browserAction are not supported on mobile")
@@ -611,7 +612,7 @@ TRACKMENOT.TMNSearch = function() {
 		} catch (ex){
             add_log({
                 'type': 'ERROR',
-                'query': "[ERROR in trackmenot.js] browserAction are not supported on mobile",
+                'query': "browserAction are not supported on mobile",
                 'engine': engine, 
             });
 			console.log("browserAction are not supported on mobile")
@@ -656,7 +657,7 @@ TRACKMENOT.TMNSearch = function() {
        } catch (e) {
             add_log({
                 'type': 'ERROR',
-                'query': "[ERROR in trackmenot.js] error in doSearch: " + e.message,
+                'query': "error in doSearch: " + e.message,
                 'engine': engine, 
             });
             console.log("error in doSearch: " + e);
@@ -738,7 +739,7 @@ TRACKMENOT.TMNSearch = function() {
         var pauseAfterError = Math.max(2 * tmn_options.timeout, 60000);
         tmn_mode = 'recovery';
         burstCount = 0;
-        console.log("[ERROR in trackmenot.js] Trying again in " + (pauseAfterError / 1000) + "s");
+        console.log("Trying again in " + (pauseAfterError / 1000) + "s");
         add_log({
             'type': 'ERROR',
             'query': 'next search in ' + (pauseAfterError / 1000) + "s",
@@ -785,7 +786,7 @@ TRACKMENOT.TMNSearch = function() {
         else engine = chooseElt(tmn_engines.list.filter(function (x) {return x.enabled})).id;
         console.log('NextSearchScheduled on: ' + engine);
         window.clearTimeout(tmn_errTimeout);
-        // tmn_errTimeout = window.setTimeout(rescheduleOnError, delay * 3);
+        tmn_errTimeout = window.setTimeout(rescheduleOnError, delay * 3);
         window.clearTimeout(tmn_searchTimer);
         tmn_searchTimer = window.setTimeout(doSearch, delay);
     }
@@ -822,7 +823,7 @@ TRACKMENOT.TMNSearch = function() {
 		} catch (ex) {
             add_log({
                 'type': 'ERROR',
-                'query': "[ERROR in trackmenot.js] browserAction are not supported on mobile",
+                'query': "browserAction are not supported on mobile",
                 'engine': engine, 
             });
 			console.log("browserAction are not supported on mobile")
@@ -843,16 +844,21 @@ TRACKMENOT.TMNSearch = function() {
                 if (entry.type === 'query') {
                     if (entry.id && entry.id === tmn_logged_id) return;
                     tmn_logged_id = entry.id;
+                }else if(entry.type === 'ERROR'){
+                    entry.query = '[trackmenot.js] ' + entry.query;
                 }
                 var now = new Date();
                 entry.date = formatNum(now.getHours()) + ":" + formatNum(now.getMinutes()) + ":" + formatNum(now.getSeconds()) +
                              '   ' + (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
             }
         } catch (ex) {
-            console.log("[ERROR in trackmenot.js] " + ex + " / " + ex.message + "\nlogging msg");
+            console.log("" + ex + " / " + ex.message + "\nlogging msg");
         }
-        tmnLogs.unshift(entry);
-        api.storage.local.set({"logs_tmn":tmnLogs});
+        if(!logSet.has(JSON.stringify(entry))){
+            logSet.add(JSON.stringify(entry));
+            tmnLogs.unshift(entry);
+            api.storage.local.set({"logs_tmn":tmnLogs});
+        }
     }
 
     function sendClickEvent() {
@@ -865,7 +871,7 @@ TRACKMENOT.TMNSearch = function() {
         } catch (ex) {
             add_log({
                 'type': 'ERROR',
-                'query': "[ERROR in trackmenot.js] " + ex.message,
+                'query': "" + ex.message,
                 'engine': engine, 
             });
             console.log(ex);
@@ -1005,7 +1011,7 @@ TRACKMENOT.TMNSearch = function() {
 		} catch (ex) {
             add_log({
                 'type': 'ERROR',
-                'query': "[ERROR in trackmenot.js] " + ex.message,
+                'query': "" + ex.message,
                 'engine': engine, 
             });
 			chrome.storage.local.get(keys,callback); 
@@ -1038,7 +1044,7 @@ TRACKMENOT.TMNSearch = function() {
 		} catch (ex) {
             add_log({
                 'type': 'ERROR',
-                'query': "[ERROR in trackmenot.js] browserAction are not supported on mobile. " + ex.message,
+                'query': "browserAction are not supported on mobile. " + ex.message,
                 'engine': engine, 
             });
 			console.log("browserAction are not supported on mobile")
@@ -1075,7 +1081,7 @@ TRACKMENOT.TMNSearch = function() {
 		} catch (ex) {
             add_log({
                 'type': 'ERROR',
-                'query': "[ERROR in trackmenot.js] browserAction are not supported on mobile. " + ex.message,
+                'query': "browserAction are not supported on mobile. " + ex.message,
                 'engine': engine, 
             });
 			console.log("browserAction are not supported on mobile")
@@ -1137,7 +1143,7 @@ TRACKMENOT.TMNSearch = function() {
                 tmnLogs = [];
                 add_log({
                     'type': 'ERROR',
-                    'query': "[ERROR in trackmenot.js] can not restore logs: " + ex.message,
+                    'query': "can not restore logs: " + ex.message,
                     'engine': engine, 
                 });
                 console.log("can not restore logs")
@@ -1175,7 +1181,7 @@ TRACKMENOT.TMNSearch = function() {
                 tmnLogs = [];
                 log({
                     'type': 'ERROR',
-                    'query': "[ERROR in trackmenot.js] can not restore logs: " + ex.message,
+                    'query': "can not restore logs: " + ex.message,
                     'engine': engine, 
                 });
                 console.log("can not restore logs")

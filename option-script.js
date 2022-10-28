@@ -102,6 +102,7 @@ function loadHandlers() {
 
      function updateEngineList() {
         tmn_engines.list.forEach(function (x) {return x.enabled = false;});
+        console.log("[In updateEngineList] ");
         $("#search-engine-list :checked").each(function() {
             console.log(($(this).val()));
             tmn_engines.list[getEngIndexById($(this).val())].enabled = true ;
