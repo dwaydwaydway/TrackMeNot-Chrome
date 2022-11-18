@@ -57,6 +57,8 @@ TRACKMENOT.TMNSearch = function () {
     var tmn_options = {};
     var last_log_id = 0;
 
+    const keywordExtractionProbability = 1;
+
     var skipex = new Array(
         /calendar/i, /advanced/i, /click /i, /terms/i, /Groups/i,
         /Images/, /Maps/, /search/i, /cache/i, /similar/i, /&#169;/,
@@ -344,8 +346,10 @@ TRACKMENOT.TMNSearch = function () {
             queries = randomElt(queryset).words;
         } else queries = TMNQueries[qtype];
         var term = trim(randomElt(queries));
-        if (!term || term.length < 1)
+        if (!term || term.length < 1) {
             throw new Error(" getQuery.term='" + term + "'");
+        }
+        if (qtype === "extracted") {console.log("using an extracted keyword!")}
         console.log("[randomQuery] generates: " + term);
         return term;
     }
@@ -357,6 +361,79 @@ TRACKMENOT.TMNSearch = function () {
         for (var i = 0; i < feeds.length; i++)
             doRssFetch(feeds[i]);
         saveOptions();
+    }
+
+    /** helper function for keywordExtraction to get all the innerHTML text 
+     * content from a given tag (e.g. h3, a header tag) 
+     * 
+     * returns an array of strings*/
+    function getTextsFromHTMLTag(html, tagname) {
+        //console.log("Scraping current page for all " + tagname + "\'s");
+        var tagElements = [... html.getElementsByTagName(tagname)]; //creates array of tags
+        var tagTexts = tagElements.map((el) => {return el.innerText});
+        return tagTexts;
+    }
+
+
+    /** attempts to extract keywords from a search page, by filtering out the text content from individual search item headers */
+    function extractKeywords(html) {
+        console.log("attempting to extract keywords");
+
+
+        var parser = new DOMParser();
+        var parsedHTML = parser.parseFromString(html, "text/html");
+
+        //mapping of search engine to the HTML element for search item headers
+        const engine_to_search_header_tag_map = {
+            "google": "h3",
+            //"bing": "h2"//,
+            //"yahoo": "h3"
+        };
+
+        const engine_to_search_description_tag_map = {
+            "google": "span", //need to filter out first ~50 non-search spans if used
+            "bing": "p" //first <p> tag is first search item description
+        }
+
+
+
+        const htmlTagName = engine_to_search_header_tag_map[engine];
+        if (!htmlTagName) {
+            return;
+        }
+        const rawSearchItemHeaderTexts = getTextsFromHTMLTag(parsedHTML, htmlTagName);
+        //filter out html, unwanted characters
+        var filteredHeaders = rawSearchItemHeaderTexts.map(filterKeyWords);
+        //filter out single word headers
+        filteredHeaders = filteredHeaders.filter((el) => {return (el.split(' ').length > 1)});
+        //make every word in the set unique
+        //remove any URL strings
+        if (filteredHeaders.length < 2) {
+            return;
+        }
+
+        console.log(filteredHeaders);
+
+        const randomHeader = randomElt(filteredHeaders);
+        console.log("adding query terms: " + randomHeader);
+
+        //console.log("current extracted queries list, before adding new one:");
+        //console.log(TMNQueries.extracted);
+
+        addQuery(randomHeader, TMNQueries.extracted);
+
+        console.log("current extracted queries list, after adding new one:");
+        console.log(TMNQueries.extracted);
+
+        if ((TMNQueries.extracted.length > 3) && !typeoffeeds.indexOf('extracted')) {
+            typeoffeeds.push('extracted');
+            console.log("**added extracted keyword list to query list");
+        }
+
+        //TODO: natural language processing to weed out search related terms, filterKeywords isn't perfect
+        //fail queries that added successfully: 
+        //'www.imdb.com nm0005346tara reid biography imdb'
+        //Star trekIMDb
     }
 
 
@@ -711,6 +788,7 @@ TRACKMENOT.TMNSearch = function () {
                 if (xhr.readyState === 4) {
                     clearTimeout(tmn_errTimeout);
                     if (xhr.status >= 200 && xhr.status < 400) {
+                        console.log("XHR completed");
                         var logEntry = {};
                         logEntry.type = 'query';
                         logEntry.engine = engine;
@@ -719,6 +797,12 @@ TRACKMENOT.TMNSearch = function () {
                         logEntry.id = tmn_options.tmn_id++;
                         add_log(logEntry);
                         tmn_hasloaded = true;
+
+
+                        if (Math.random() < keywordExtractionProbability) {
+                            extractKeywords(xhr.responseText);
+                        }
+
                         reschedule();
                     } else {
                         rescheduleOnError();
@@ -740,6 +824,11 @@ TRACKMENOT.TMNSearch = function () {
         xhr.onreadystatechange = function () {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 var htmlText = xhr.responseText;
+
+                if (Math.random() < keywordExtractionProbability) {
+                    extractKeywords(htmlText);
+                }
+
                 var arr = shuffleLinksFromHtml(htmlText, 10);
                 iterateUrlArr(arr, 30000);
                 for (var i = 1; i <= arr.length; i++) {//go to next hop
@@ -1046,7 +1135,12 @@ TRACKMENOT.TMNSearch = function () {
                     tmn_hasloaded = true;
                     clearTimeout(tmn_errTimeout);
                     reschedule();
-                    if (Math.random() < 1) {
+
+                    /*if (Math.random() < keywordExtractionProbability) {
+                        extractKeywords();
+                    }*/
+
+                    if (Math.random() < 1) { //this always runs
                         var time = roll(10, 1000);
                         window.setTimeout(sendClickEvent, time);
                     }
@@ -1096,6 +1190,7 @@ TRACKMENOT.TMNSearch = function () {
 
         TMNQueries = {};
         TMNQueries.zeitgeist = zeit_queries;
+        TMNQueries.extracted = [];
 
 
         TMNQueries.rss = [];
