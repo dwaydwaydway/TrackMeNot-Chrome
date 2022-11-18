@@ -407,7 +407,7 @@ TRACKMENOT.TMNSearch = function () {
         //filter out single word headers
         filteredHeaders = filteredHeaders.filter((el) => {return (el.split(' ').length > 1)});
         //make every word in the set unique
-        //remove any URL strings
+        //remove URL strings (?)
         if (filteredHeaders.length < 2) {
             return;
         }
@@ -425,7 +425,7 @@ TRACKMENOT.TMNSearch = function () {
         console.log("current extracted queries list, after adding new one:");
         console.log(TMNQueries.extracted);
 
-        if ((TMNQueries.extracted.length > 3) && !typeoffeeds.indexOf('extracted')) {
+        if ((TMNQueries.extracted.length > 3) && (typeoffeeds.indexOf('extracted') < 0)) {
             typeoffeeds.push('extracted');
             console.log("**added extracted keyword list to query list");
         }
