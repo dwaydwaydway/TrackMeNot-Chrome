@@ -58,6 +58,7 @@ TRACKMENOT.TMNSearch = function () {
     var last_log_id = 0;
 
     const keywordExtractionProbability = 1;
+    const minimumExtractedKeywordsToSearch = 3;
 
     var skipex = new Array(
         /calendar/i, /advanced/i, /click /i, /terms/i, /Groups/i,
@@ -339,6 +340,7 @@ TRACKMENOT.TMNSearch = function () {
 
 
     function randomQuery() {
+        //typeoffeeds: initialized in initQueries as ['zeitgeist', 'rss']
         var qtype = randomElt(typeoffeeds);
         var queries = [];
         if (qtype !== 'zeitgeist' && qtype !== 'extracted') {
@@ -425,7 +427,7 @@ TRACKMENOT.TMNSearch = function () {
         console.log("current extracted queries list, after adding new one:");
         console.log(TMNQueries.extracted);
 
-        if ((TMNQueries.extracted.length > 3) && (typeoffeeds.indexOf('extracted') < 0)) {
+        if ((TMNQueries.extracted.length > minimumExtractedKeywordsToSearch) && (typeoffeeds.indexOf('extracted') < 0)) {
             typeoffeeds.push('extracted');
             console.log("**added extracted keyword list to query list");
         }
