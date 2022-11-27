@@ -1,0 +1,5 @@
+{
+    "source": {
+        "include": [ "trackmenot.js", "tmn_search.js", "menu-script.js", "option-script.js" ]
+    }
+}

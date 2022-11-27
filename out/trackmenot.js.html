@@ -1,4 +1,32 @@
-/*******************************************************************************
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: trackmenot.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: trackmenot.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*******************************************************************************
     This file is part of TrackMeNot).
 
     TrackMeNot is free software: you can redistribute it and/or modify
@@ -11,7 +39,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+    along with Foobar.  If not, see &lt;http://www.gnu.org/licenses/>.
  ********************************************************************************/
 "use strict";
 
@@ -87,7 +115,7 @@ TRACKMENOT.TMNSearch = function () {
 
     var skipex = new Array(
         /calendar/i, /advanced/i, /click /i, /terms/i, /Groups/i,
-        /Images/, /Maps/, /search/i, /cache/i, /similar/i, /&#169;/,
+        /Images/, /Maps/, /search/i, /cache/i, /similar/i, /&amp;#169;/,
         /sign in/i, /help[^Ss]/i, /download/i, /print/i, /Books/i, /rss/i,
         /google/i, /bing/i, /yahoo/i, /aol/i, /html/i, /ask/i, /xRank/,
         /permalink/i, /aggregator/i, /trackback/, /comment/i, /More/,
@@ -99,7 +127,7 @@ TRACKMENOT.TMNSearch = function () {
         /Webmasters/, /MapQuest/, /Movies/, /Music/, /Yellow Pages/,
         /jobs/i, /answers/i, /options/i, /customize/i, /settings/i,
         /Developers/, /cashback/, /Health/, /Products/, /QnABeta/,
-        /<more>/, /Travel/, /Personals/, /Local/, /Trademarks/,
+        /&lt;more>/, /Travel/, /Personals/, /Local/, /Trademarks/,
         /cache/i, /similar/i, /login/i, /mail/i, /feed/i
     );
 
@@ -140,8 +168,8 @@ TRACKMENOT.TMNSearch = function () {
 
     function getElementsByAttrValue(dom, nodeType, attrName, nodeValue) {
         var outlines = dom.getElementsByTagName(nodeType);
-        for (var i = 0; i < outlines.length; i++) {
-            if (outlines[i].hasAttribute(attrName) && outlines[i].getAttribute(attrName) === nodeValue)
+        for (var i = 0; i &lt; outlines.length; i++) {
+            if (outlines[i].hasAttribute(attrName) &amp;&amp; outlines[i].getAttribute(attrName) === nodeValue)
                 return outlines[i];
         }
         return null;
@@ -156,16 +184,16 @@ TRACKMENOT.TMNSearch = function () {
             {
                 id: 'google',
                 name: 'Google Search',
-                urlmap: "https://www.google.com/search?hl=en&q=|",
+                urlmap: "https://www.google.com/search?hl=en&amp;q=|",
                 enabled: true,
-                regexmap: "^(https?:\/\/[a-z]+\.google\.(co\\.|com\\.)?[a-z]{2,3}\/(search){1}[\?]?.*?[&\?]{1}q=)([^&]*)(.*)$"
+                regexmap: "^(https?:\/\/[a-z]+\.google\.(co\\.|com\\.)?[a-z]{2,3}\/(search){1}[\?]?.*?[&amp;\?]{1}q=)([^&amp;]*)(.*)$"
             },
             {
                 id: 'yahoo',
                 name: 'Yahoo! Search',
-                urlmap: "https://search.yahoo.com/search;_ylt=" + getYahooId() + "?ei=UTF-8&fr=sfp&fr2=sfp&p=|&fspl=1",
+                urlmap: "https://search.yahoo.com/search;_ylt=" + getYahooId() + "?ei=UTF-8&amp;fr=sfp&amp;fr2=sfp&amp;p=|&amp;fspl=1",
                 enabled: true,
-                regexmap: "^(https?:\/\/[a-z.]*?search\.yahoo\.com\/search.*?p=)([^&]*)(.*)$",
+                regexmap: "^(https?:\/\/[a-z.]*?search\.yahoo\.com\/search.*?p=)([^&amp;]*)(.*)$",
                 host: "([a-z.]*?search\.yahoo\.com)$"
             },
             {
@@ -173,7 +201,7 @@ TRACKMENOT.TMNSearch = function () {
                 name: 'Bing Search',
                 urlmap: "https://www.bing.com/search?q=|",
                 enabled: true,
-                regexmap: "^(https?:\/\/www\.bing\.com\/search\?[^&]*q=)([^&]*)(.*)$",
+                regexmap: "^(https?:\/\/www\.bing\.com\/search\?[^&amp;]*q=)([^&amp;]*)(.*)$",
                 host: "(www\.bing\.com)$"
             },
             {
@@ -181,7 +209,7 @@ TRACKMENOT.TMNSearch = function () {
                 name: 'Baidu Search',
                 urlmap: "https://www.baidu.com/s?wd=|",
                 enabled: false,
-                regexmap: "^(https?:\/\/www\.baidu\.com\/s\?.*?wd=)([^&]*)(.*)$",
+                regexmap: "^(https?:\/\/www\.baidu\.com\/s\?.*?wd=)([^&amp;]*)(.*)$",
                 host: "(www\.baidu\.com)$"
             }
         ]
@@ -199,8 +227,8 @@ TRACKMENOT.TMNSearch = function () {
 
     function getYahooId() {
         var id = "A0geu";
-        while (id.length < 24) {
-            var lower = Math.random() < .5;
+        while (id.length &lt; 24) {
+            var lower = Math.random() &lt; .5;
             var num = parseInt(Math.random() * 38);
             if (num === 37) {
                 id += '_';
@@ -210,7 +238,7 @@ TRACKMENOT.TMNSearch = function () {
                 id += '.';
                 continue;
             }
-            if (num < 10) {
+            if (num &lt; 10) {
                 id += String.fromCharCode(num + 48);
                 continue;
             }
@@ -314,7 +342,7 @@ TRACKMENOT.TMNSearch = function () {
                 console.log("Worker find a match for url: " + url + " on engine " + eng + "!");
                 if (tmn_options.burstMode) enterBurst(eng);
                 var engine = getEngineById(eng);
-                if (engine && engine.urlmap !== asearch) {
+                if (engine &amp;&amp; engine.urlmap !== asearch) {
                     engine.urlmap = asearch;
                     api.storage.local.set({ 'engines': tmn_engines });
                     var logEntry = createLog('URLmap', eng, null, null, null, asearch)
@@ -329,7 +357,7 @@ TRACKMENOT.TMNSearch = function () {
     function checkForSearchUrl(url) {
         var result = null;
         var eng;
-        for (var i = 0; i < tmn_engines.list.length; i++) {
+        for (var i = 0; i &lt; tmn_engines.list.length; i++) {
             eng = tmn_engines.list[i];
             var regex = eng.regexmap;
             // console.log("  regex: " + regex + "  ->\n                   " + url);
@@ -342,7 +370,7 @@ TRACKMENOT.TMNSearch = function () {
         if (!result) return null;
 
         if (result.length !== 4) {
-            if (result.length === 6 && eng.id === "google") {
+            if (result.length === 6 &amp;&amp; eng.id === "google") {
                 result.splice(2, 2);
                 result.push(eng.id);
                 return result;
@@ -357,7 +385,7 @@ TRACKMENOT.TMNSearch = function () {
 
 
     function isBursting() {
-        return (tmn_options.burstMode && (burstCount > 0));
+        return (tmn_options.burstMode &amp;&amp; (burstCount > 0));
     }
 
 
@@ -367,12 +395,12 @@ TRACKMENOT.TMNSearch = function () {
     function randomQuery() {
         var qtype = randomElt(typeoffeeds);
         var queries = [];
-        if (qtype !== 'zeitgeist' && qtype !== 'extracted') {
+        if (qtype !== 'zeitgeist' &amp;&amp; qtype !== 'extracted') {
             var queryset = TMNQueries[qtype];
             queries = randomElt(queryset).words;
         } else queries = TMNQueries[qtype];
         var term = trim(randomElt(queries));
-        if (!term || term.length < 1)
+        if (!term || term.length &lt; 1)
             throw new Error(" getQuery.term='" + term + "'");
         console.log("[randomQuery] generates: " + term);
         return term;
@@ -382,14 +410,14 @@ TRACKMENOT.TMNSearch = function () {
         TMNQueries.rss = [];
         tmn_options.feedList = param.feeds;
         var feeds = tmn_options.feedList;
-        for (var i = 0; i < feeds.length; i++)
+        for (var i = 0; i &lt; feeds.length; i++)
             doRssFetch(feeds[i]);
         saveOptions();
     }
 
 
     function extractQueries(html) {
-        var forbiddenChar = new RegExp("^[ @#<>\"\\\/,;'�{}:?%|\^~`=]", "g");
+        var forbiddenChar = new RegExp("^[ @#&lt;>\"\\\/,;'�{}:?%|\^~`=]", "g");
         var splitRegExp = new RegExp('^[\\[\\]\\(\\)\\"\']', "g");
 
         if (!html) {
@@ -400,17 +428,17 @@ TRACKMENOT.TMNSearch = function () {
         var phrases = new Array();
 
         // Parse the HTML into phrases
-        var l = html.split(/((<\?tr>)|(<br>)|(<\/?p>))/i);
-        for (var i = 0; i < l.length; i++) {
+        var l = html.split(/((&lt;\?tr>)|(&lt;br>)|(&lt;\/?p>))/i);
+        for (var i = 0; i &lt; l.length; i++) {
             if (!l[i] || l[i] == "undefined") continue;
-            l[i] = l[i].replace(/(<([^>]+)>)/ig, " ");
+            l[i] = l[i].replace(/(&lt;([^>]+)>)/ig, " ");
             //if (/([a-z]+ [a-z]+)/i.test(l[i])) {
             //var reg = /([a-z]{4,} [a-z]{4,} [a-z]{4,} ([a-z]{4,} ?) {0,3})/i;
             var matches = l[i].split(" "); //reg.exec(l[i]);
-            if (!matches || matches.length < 2) continue;
+            if (!matches || matches.length &lt; 2) continue;
             var newQuery = trim(matches[1]);
             // if ( phrases.length >0 ) newQuery.unshift(" ");
-            if (newQuery && phrases.indexOf(newQuery) < 0)
+            if (newQuery &amp;&amp; phrases.indexOf(newQuery) &lt; 0)
                 phrases.push(newQuery);
         }
         var queryToAdd = phrases.join(" ");
@@ -426,7 +454,7 @@ TRACKMENOT.TMNSearch = function () {
     function isBlackList(term) {
         if (!tmn_options.use_black_list) return false;
         var words = term.split(/\W/g);
-        for (var i = 0; i < words.length; i++) {
+        for (var i = 0; i &lt; words.length; i++) {
             if (tmn_options.kwBlackList.indexOf(words[i].toLowerCase()) >= 0)
                 return true;
         }
@@ -434,7 +462,7 @@ TRACKMENOT.TMNSearch = function () {
     }
 
     function queryOk(a) {
-        for (let i = 0; i < skipex.length; i++) {
+        for (let i = 0; i &lt; skipex.length; i++) {
             if (skipex[i].test(a))
                 return false;
         }
@@ -450,14 +478,14 @@ TRACKMENOT.TMNSearch = function () {
         if (isBlackList(term))
             return false;
 
-        if (!term || (term.length < 3) || (queryList.indexOf(term) > 0))
+        if (!term || (term.length &lt; 3) || (queryList.indexOf(term) > 0))
             return false;
 
         if (term.indexOf("\"\"") > -1 || term.indexOf("--") > -1)
             return false;
 
         // test for negation of a single term (eg '-prison')
-        if (term.indexOf("-") === 0 && term.indexOf(" ") < 0)
+        if (term.indexOf("-") === 0 &amp;&amp; term.indexOf(" ") &lt; 0)
             return false;
 
         if (!queryOk(term))
@@ -473,19 +501,19 @@ TRACKMENOT.TMNSearch = function () {
     // returns # of keywords added
     function filterKeyWords(rssTitles) {
         var addStr = ""; //tmp-debugging
-        var forbiddenChar = new RegExp("[ @#<>\"\\\/,;'�{}:?%|\^~`=]+", "g");
+        var forbiddenChar = new RegExp("[ @#&lt;>\"\\\/,;'�{}:?%|\^~`=]+", "g");
         var splitRegExp = new RegExp('[\\[\\]\\(\\)\\"\']+', "g");
         var wordArray = rssTitles.split(forbiddenChar);
 
-        for (var i = 0; i < wordArray.length; i++) {
+        for (var i = 0; i &lt; wordArray.length; i++) {
             if (!wordArray[i].match('-----')) {
                 var word = wordArray[i].split(splitRegExp)[0];
-                if (word && word.length > 2) {
-                    W: while (i < (wordArray.length) && wordArray[i + 1] && !(wordArray[i + 1].match('-----') ||
+                if (word &amp;&amp; word.length > 2) {
+                    W: while (i &lt; (wordArray.length) &amp;&amp; wordArray[i + 1] &amp;&amp; !(wordArray[i + 1].match('-----') ||
                         wordArray[i + 1].match(splitRegExp))) {
                         var nextWord = wordArray[i + 1]; // added new check here -dch
                         if (nextWord !== nextWord.toLowerCase()) {
-                            nextWord = trim(nextWord.toLowerCase().replace(/\s/g, '').replace(/[(<>"'�&]/g, ''));
+                            nextWord = trim(nextWord.toLowerCase().replace(/\s/g, '').replace(/[(&lt;>"'�&amp;]/g, ''));
                             if (nextWord.length > 1) {
                                 word += ' ' + nextWord;
                             }
@@ -506,7 +534,7 @@ TRACKMENOT.TMNSearch = function () {
         if (!xmlData) return 0; // only for asynchs? -dch
 
         var feedTitles = xmlData.getElementsByTagName("title");
-        if (!feedTitles || feedTitles.length < 2) {
+        if (!feedTitles || feedTitles.length &lt; 2) {
             cerr("no items(" + feedTitles + ") for rss-feed: " + feedUrl);
             return 0;
         }
@@ -514,7 +542,7 @@ TRACKMENOT.TMNSearch = function () {
         feedObject.name = feedTitles[0].firstChild.nodeValue;
         feedObject.words = [];
         // console.log('ADD RSS title : ' + feedTitles[0].firstChild.nodeValue);
-        for (var i = 1; i < feedTitles.length; i++) {
+        for (var i = 1; i &lt; feedTitles.length; i++) {
             if (feedTitles[i].firstChild) {
                 rssTitles = feedTitles[i].firstChild.nodeValue;
                 rssTitles += " ----- ";
@@ -589,13 +617,13 @@ TRACKMENOT.TMNSearch = function () {
     function getSubQuery(queryWords) {
         var incQuery = "";
         var randomArray = new Array();
-        for (var k = 0; k < queryWords.length; k++) {
+        for (var k = 0; k &lt; queryWords.length; k++) {
             let randomIndex = roll(0, queryWords.length - 1);
-            if (randomArray.indexOf(randomIndex) < 0)
+            if (randomArray.indexOf(randomIndex) &lt; 0)
                 randomArray.push(randomIndex);
         }
         randomArray.sort();
-        for (k = 0; k < randomArray.length - 1 && k < 5; k++) {
+        for (k = 0; k &lt; randomArray.length - 1 &amp;&amp; k &lt; 5; k++) {
             incQuery += queryWords[randomArray[k]] + ' ';
         }
         incQuery += queryWords[randomArray[k]];
@@ -609,7 +637,7 @@ TRACKMENOT.TMNSearch = function () {
         var term = randomQuery();
         if (term.indexOf('\n') > 0) { // yuck, replace w' chomp();
             while (true) {
-                for (var i = 0; i < term.length; i++) {
+                for (var i = 0; i &lt; term.length; i++) {
                     if (term.charAt(i) === '\n') {
                         term = term.substring(0, i) + ' ' + term.substring(i + 1, term.length);
                         continue;
@@ -672,7 +700,7 @@ TRACKMENOT.TMNSearch = function () {
         try {
             //messy construction where if getSubQuery has generated incQueries, then
             //sendQuery will fill in the query from this
-            if (incQueries && incQueries.length > 0)
+            if (incQueries &amp;&amp; incQueries.length > 0)
                 sendQuery(null);
             else {
                 newquery = getQuery();
@@ -681,11 +709,11 @@ TRACKMENOT.TMNSearch = function () {
                     getSubQuery(queryWords);
                     if (useIncrementals) {
                         var unsatisfiedNumber = roll(1, 4);
-                        for (var n = 0; n < unsatisfiedNumber - 1; n++)
+                        for (var n = 0; n &lt; unsatisfiedNumber - 1; n++)
                             getSubQuery(queryWords);
                     }
                     // not sure what is going on here? -dch
-                    if (incQueries && incQueries.length > 0)
+                    if (incQueries &amp;&amp; incQueries.length > 0)
                         newquery = incQueries.pop();
                 }
                 sendQuery(newquery);
@@ -706,14 +734,14 @@ TRACKMENOT.TMNSearch = function () {
         //Q: where is engine set, as used here?
         var url = getEngineById(engine).urlmap;
         if (queryToSend === null) {
-            if (incQueries && incQueries.length > 0)
+            if (incQueries &amp;&amp; incQueries.length > 0)
                 queryToSend = incQueries.pop();
             else {
                 if (!queryToSend) console.log('sendQuery error! queryToSendis null');
                 return;
             }
         }
-        if (Math.random() < 0.9) queryToSend = queryToSend.toLowerCase(); //high chance of setting all lowercase
+        if (Math.random() &lt; 0.9) queryToSend = queryToSend.toLowerCase(); //high chance of setting all lowercase
         if (queryToSend[0] === ' ') queryToSend = queryToSend.substr(1); //remove the first space
         tmn_hasloaded = false;
         if (tmn_options.useTab) {
@@ -738,7 +766,7 @@ TRACKMENOT.TMNSearch = function () {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     clearTimeout(tmn_errTimeout);
-                    if (xhr.status >= 200 && xhr.status < 400) {
+                    if (xhr.status >= 200 &amp;&amp; xhr.status &lt; 400) {
                         var logEntry = {};
                         logEntry.type = 'query';
                         logEntry.engine = engine;
@@ -765,7 +793,7 @@ TRACKMENOT.TMNSearch = function () {
         xhr.open("GET", url, true);
         xhr.send(null);
         xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
+            if (xhr.readyState == 4 &amp;&amp; xhr.status == 200) {
                 var htmlText = xhr.responseText;
                 var arr = getLinksFromHtml(htmlText);
                 // debugger
@@ -779,7 +807,7 @@ TRACKMENOT.TMNSearch = function () {
     function randomWalk2(urlArr) {
         //adding user interaction: users search something, and machine click one of the result.
 
-        // for (var i = 0; i < urlArr.length; i++) {
+        // for (var i = 0; i &lt; urlArr.length; i++) {
         //     var url = urlArr[i];
         //     const xhr = new XMLHttpRequest();
         //     xhr.open("GET", url, true);
@@ -803,9 +831,9 @@ TRACKMENOT.TMNSearch = function () {
         var htmlDoc = parser.parseFromString(txt, "text/html")
         // console.log(htmlDoc.getElementsByTagName("a"));
         var arr = [], l = htmlDoc.links;
-        for (var i = 0; i < l.length; i++) {
+        for (var i = 0; i &lt; l.length; i++) {
             const str = l[i].href;
-            if (str.substring(0, 5) === 'https' && !str.includes("google") && !str.includes("gov"))
+            if (str.substring(0, 5) === 'https' &amp;&amp; !str.includes("google") &amp;&amp; !str.includes("gov"))
                 arr.push(l[i].href);
         }
         // Shuffle array
@@ -932,7 +960,7 @@ TRACKMENOT.TMNSearch = function () {
     }
 
     function formatNum(val) {
-        if (val < 10) return '0' + val;
+        if (val &lt; 10) return '0' + val;
         return val;
     }
 
@@ -941,7 +969,7 @@ TRACKMENOT.TMNSearch = function () {
         try {
             if (entry !== null) {
                 if (entry.type === 'query') {
-                    if (entry.id && entry.id === tmn_logged_id) return;
+                    if (entry.id &amp;&amp; entry.id === tmn_logged_id) return;
                     tmn_logged_id = entry.id;
                 }
                 var now = new Date();
@@ -985,7 +1013,7 @@ TRACKMENOT.TMNSearch = function () {
 
     function handleRequest(request, sender, sendResponse) {
         if (request.tmnLog) {
-            if ((request.tmnID) && (request.tmnID <= last_log_id)) {
+            if ((request.tmnID) &amp;&amp; (request.tmnID &lt;= last_log_id)) {
                 console.log("blocked duplicate log request");
             }
             last_log_id = request.tmnID;
@@ -1036,7 +1064,7 @@ TRACKMENOT.TMNSearch = function () {
                     tmn_hasloaded = true;
                     clearTimeout(tmn_errTimeout);
                     reschedule();
-                    if (Math.random() < 1) {
+                    if (Math.random() &lt; 1) {
                         var time = roll(10, 1000);
                         window.setTimeout(sendClickEvent, time);
                     }
@@ -1332,4 +1360,26 @@ api.runtime.onMessage.addListener(TRACKMENOT.TMNSearch._handleRequest);
 api.tabs.onRemoved.addListener(TRACKMENOT.TMNSearch._preserveTMNTab);
 
 TRACKMENOT.TMNSearch._getStorage(["options_tmn", "gen_queries", "engines_tmn", "logs_tmn"], TRACKMENOT.TMNSearch._restoreTMN);
-api.storage.onChanged.addListener(TRACKMENOT.TMNSearch._logStorageChange);
+api.storage.onChanged.addListener(TRACKMENOT.TMNSearch._logStorageChange);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="TRACKMENOT.module_TMNInjected.html">TMNInjected</a></li><li><a href="TRACKMENOT.module_TMNSearch.html">TMNSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#TMNShowEngines">TMNShowEngines</a></li><li><a href="global.html#logGotItem">logGotItem</a></li><li><a href="global.html#saveOptions">saveOptions</a></li><li><a href="global.html#toggleTabFrame">toggleTabFrame</a></li><li><a href="global.html#updateEngineList">updateEngineList</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.0</a> on Sat Nov 26 2022 18:56:49 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

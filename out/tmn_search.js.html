@@ -1,4 +1,32 @@
-/*******************************************************************************    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: tmn_search.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: tmn_search.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*******************************************************************************    
  This file is part of TrackMeNot (Chrome version).
  
  TrackMeNot is free software: you can redistribute it and/or modify
@@ -11,7 +39,7 @@
  GNU General Public License for more details.
  
  You should have received a copy of the GNU General Public License
- along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ along with Foobar.  If not, see &lt;http://www.gnu.org/licenses/>.
  ********************************************************************************/
 
 var api;
@@ -38,15 +66,16 @@ TRACKMENOT.TMNInjected = function() {
     var current_request_id = 1;
     var tmnCurrentURL = '';
     var engine = '';
-    var last_engine = ''; //unused
     //    var allEvents = ['blur','change','click','dblclick','DOMMouseScroll','focus','keydown','keypress','keyup','load','mousedown','mousemove','mouseout','mouseover','mouseup','select'];
 
 
+    /** test test 
+     * */
     var testAd_google = function(anchorClass, anchorlink) {
         return (anchorlink
-                && (anchorClass === 'l' || anchorClass === 'l vst')
-                && anchorlink.indexOf('http') === 0
-                && anchorlink.indexOf('https') !== 0);
+                &amp;&amp; (anchorClass === 'l' || anchorClass === 'l vst')
+                &amp;&amp; anchorlink.indexOf('http') === 0
+                &amp;&amp; anchorlink.indexOf('https') !== 0);
     }
 
     var testAd_yahoo = function(anchorClass, anchorlink) {
@@ -56,24 +85,24 @@ TRACKMENOT.TMNInjected = function() {
 
     var testAd_aol = function(anchorClass, anchorlink) {
         return (anchorClass === '\"find\"' || anchorClass === 'find'
-                && anchorlink.indexOf('https') !== 0 && anchorlink.indexOf('aol') < 0);
+                &amp;&amp; anchorlink.indexOf('https') !== 0 &amp;&amp; anchorlink.indexOf('aol') &lt; 0);
     }
 
     var testAd_bing = function(anchorClass, anchorlink) {
         return (anchorlink
-                && anchorlink.indexOf('http') === 0
-                && anchorlink.indexOf('https') !== 0
-                && anchorlink.indexOf('msn') < 0
-                && anchorlink.indexOf('live') < 0
-                && anchorlink.indexOf('bing') < 0
-                && anchorlink.indexOf('microsoft') < 0
-                && anchorlink.indexOf('WindowsLiveTranslator') < 0)
+                &amp;&amp; anchorlink.indexOf('http') === 0
+                &amp;&amp; anchorlink.indexOf('https') !== 0
+                &amp;&amp; anchorlink.indexOf('msn') &lt; 0
+                &amp;&amp; anchorlink.indexOf('live') &lt; 0
+                &amp;&amp; anchorlink.indexOf('bing') &lt; 0
+                &amp;&amp; anchorlink.indexOf('microsoft') &lt; 0
+                &amp;&amp; anchorlink.indexOf('WindowsLiveTranslator') &lt; 0)
     }
 
     var testAd_baidu = function(anchorClass, anchorlink) {
         return (anchorlink
-                && anchorlink.indexOf('baidu') < 0
-                && anchorlink.indexOf('https') !== 0);
+                &amp;&amp; anchorlink.indexOf('baidu') &lt; 0
+                &amp;&amp; anchorlink.indexOf('https') !== 0);
     }
 
     var getButton_google = function(  ) {
@@ -198,25 +227,25 @@ TRACKMENOT.TMNInjected = function() {
             'id': 'google',
             'name': 'Google Searchs',
             "host": "(www\.google\.(co\.|com\.)?[a-z]{2,3})$",
-            'regexmap': "^(https?:\/\/[a-z]+\.google\.(co\\.|com\\.)?[a-z]{2,3}\/(search){1}[\?]?.*?[&\?]{1}q=)([^&]*)(.*)$"
+            'regexmap': "^(https?:\/\/[a-z]+\.google\.(co\\.|com\\.)?[a-z]{2,3}\/(search){1}[\?]?.*?[&amp;\?]{1}q=)([^&amp;]*)(.*)$"
         },
         {
             'id': 'yahoo',
             'name': 'Yahoo! Search',
             "host": "([a-z.]*?search\.yahoo\.com)$",
-            'regexmap': "^(https?:\/\/[a-z.]*?search\.yahoo\.com\/search.*?p=)([^&]*)(.*)$"
+            'regexmap': "^(https?:\/\/[a-z.]*?search\.yahoo\.com\/search.*?p=)([^&amp;]*)(.*)$"
         },
         {
             'id': 'bing',
             'name': 'Bing Search',
             "host": "(www\.bing\.com)$",
-            'regexmap': "^(https?:\/\/www\.bing\.com\/search\?[^&]*q=)([^&]*)(.*)$"
+            'regexmap': "^(https?:\/\/www\.bing\.com\/search\?[^&amp;]*q=)([^&amp;]*)(.*)$"
         },
         {
             'id': 'baidu',
             'name': 'Baidu Search',
             "host": "(www\.baidu\.com)$",
-            'regexmap': "^(https?:\/\/www\.baidu\.com\/s\?.*?wd=)([^&]*)(.*)$"
+            'regexmap': "^(https?:\/\/www\.baidu\.com\/s\?.*?wd=)([^&amp;]*)(.*)$"
         }
     ];
     function roll(min, max) {
@@ -233,7 +262,7 @@ TRACKMENOT.TMNInjected = function() {
 
 
     function stripTags(htmlStr) {
-        return htmlStr.replace(/(<([^>]+)>)/ig, "");
+        return htmlStr.replace(/(&lt;([^>]+)>)/ig, "");
     }
 
 
@@ -294,7 +323,7 @@ TRACKMENOT.TMNInjected = function() {
 
         var anchorLink, anchorClass;
         var j = 0;
-        for (var i = 0; i < pageLinks.length; i++) {
+        for (var i = 0; i &lt; pageLinks.length; i++) {
             if (pageLinks[i].hasAttribute("orighref"))
                 anchorLink = pageLinks[i].getAttribute("orighref");
             else
@@ -363,8 +392,8 @@ TRACKMENOT.TMNInjected = function() {
 
     function getElementsByAttrValue(dom, nodeType, attrName, nodeValue) {
         var outlines = dom.getElementsByTagName(nodeType);
-        for (var i = 0; i < outlines.length; i++) {
-            if (outlines[i].hasAttribute(attrName) && outlines[i].getAttribute(attrName) === nodeValue)
+        for (var i = 0; i &lt; outlines.length; i++) {
+            if (outlines[i].hasAttribute(attrName) &amp;&amp; outlines[i].getAttribute(attrName) === nodeValue)
                 return outlines[i];
         }
         return null;
@@ -383,7 +412,7 @@ TRACKMENOT.TMNInjected = function() {
 
     function getTimingArray() {
         var timers = [];
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i &lt; 5; i++) {
             timers.push(Math.floor(Math.random() * 30));
         }
         return timers.sort();
@@ -397,9 +426,9 @@ TRACKMENOT.TMNInjected = function() {
 
         clickElt(searchBox);
         searchBox.focus();
-        if (currIndex < queryToSend.length) {
+        if (currIndex &lt; queryToSend.length) {
             // var suggestElt = getQuerySuggestion(doc);	
-            /*if (false && Math.random() < 0.02 && suggestElt.length > 0) {
+            /*if (false &amp;&amp; Math.random() &lt; 0.02 &amp;&amp; suggestElt.length > 0) {
                 var index_ = roll(0, suggestElt.length - 1);
                 selectElt(suggestElt[index_], searchBox);
                 clickElt(suggestElt[index_]);
@@ -408,9 +437,9 @@ TRACKMENOT.TMNInjected = function() {
                 return;
             } else {*/
                 var newWord = queryToSend.substring(currIndex).split(" ")[0];
-                if (newWord.length > 1 && (currIndex === 0 || queryToSend[currIndex - 1] === " ")) {
+                if (newWord.length > 1 &amp;&amp; (currIndex === 0 || queryToSend[currIndex - 1] === " ")) {
                     console.log("Checking if " + newWord + " appears in " + searchBox.value);
-                    if (!(searchBox.value.indexOf(newWord + " ") < 0)) {
+                    if (!(searchBox.value.indexOf(newWord + " ") &lt; 0)) {
                         console.log("It\s in");
                         if (searchBox.value.indexOf(newWord, currIndex) >= 0) {
                             console.log("We\re movine of " + newWord.length + 1);
@@ -451,7 +480,7 @@ TRACKMENOT.TMNInjected = function() {
             updateStatus(searchBox.value);
             nextPress = roll(10, 30);
             window.setTimeout(clickButton, nextPress, searchButton);
-            // if (Math.random() < 0.5)
+            // if (Math.random() &lt; 0.5)
             //     window.setTimeout(clickButton, nextPress);
             // else
             //     window.setTimeout(pressEnter, nextPress, searchBox);
@@ -461,7 +490,7 @@ TRACKMENOT.TMNInjected = function() {
 
 
     function queryToURL(url, query) {
-        if (Math.random() < 0.9)
+        if (Math.random() &lt; 0.9)
             query = query.toLowerCase();
         var urlQuery = url.replace('|', query);
         urlQuery = urlQuery.replace(/ /g, '+');
@@ -513,7 +542,7 @@ TRACKMENOT.TMNInjected = function() {
             var searchButton = get_button(engine.id);
             console.log("searchBox: " + JSON.stringify(searchBox));
             console.log("get_button: " + JSON.stringify(get_button));
-            if (searchBox && searchButton && engine !== 'aol') {
+            if (searchBox &amp;&amp; searchButton &amp;&amp; engine !== 'aol') {
                 searchBox.value = getCommonWords(searchBox.value, queryToSend).join(' ');
                 searchBox.selectionStart = 0;
                 searchBox.selectionEnd = 0;
@@ -547,7 +576,7 @@ TRACKMENOT.TMNInjected = function() {
 
 
     function isSafeHost(host) {
-        for (var i = 0; i < engines_regex.length; i++) {
+        for (var i = 0; i &lt; engines_regex.length; i++) {
             var eng = engines_regex[i];
             var regex = eng.host;
             // console.log("regex :" + regex);
@@ -657,7 +686,7 @@ TRACKMENOT.TMNInjected = function() {
             api.runtime.sendMessage({
                 tmn: "isActiveTab"
             }, function(response) {
-                if ( response && response.isActive) {
+                if ( response &amp;&amp; response.isActive) {
                     console.log('Message sent from active tab');
                     TRACKMENOT.TMNInjected.hasLoaded();
                 }
@@ -679,3 +708,26 @@ TRACKMENOT.TMNInjected.checkIsActiveTab();
 api.runtime.onMessage.addListener(TRACKMENOT.TMNInjected.handleRequest);
 
 
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="TRACKMENOT.module_TMNInjected.html">TMNInjected</a></li><li><a href="TRACKMENOT.module_TMNSearch.html">TMNSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#TMNShowEngines">TMNShowEngines</a></li><li><a href="global.html#logGotItem">logGotItem</a></li><li><a href="global.html#saveOptions">saveOptions</a></li><li><a href="global.html#toggleTabFrame">toggleTabFrame</a></li><li><a href="global.html#updateEngineList">updateEngineList</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.0</a> on Sat Nov 26 2022 18:56:49 GMT-0500 (Eastern Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
