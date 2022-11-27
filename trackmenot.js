@@ -26,7 +26,7 @@ var _ = api.i18n.getMessage;
 
 if (!TRACKMENOT) var TRACKMENOT = {};
 
-/** A function to create the TMNSearch object, used as a high-level interface and manager 
+/** The TRACKMENOT.TMNSearch object, used as a high-level interface and manager 
  * for the core search functionality of the extension 
  * @exports TRACKMENOT.TMNSearch 
  * @property {number} tmn_tab_id - the ID of the tab controlled by TMN for searches
@@ -187,14 +187,17 @@ TRACKMENOT.TMNSearch = function () {
         ]
     }
 
-
+    /** 
+     * Finds an engine in tmn_engines with a given id
+     * @function getEngineById
+     * @inner
+     * @param {String} id - the engine id
+     * */
     function getEngineById(id) {
         return tmn_engines.list.filter(function (a) {
             return a.id === id;
         })[0];
     }
-
-
 
 
     function getYahooId() {
@@ -230,7 +233,12 @@ TRACKMENOT.TMNSearch = function () {
 
     // Tab functions
 
-    /** using the new value for the useT option, determine if there was a change and if so, either create or delete a tab (corresponding to that new value) */
+    /** using the new value for the useT option, determine if there was a change and if so, either create or delete a tab (corresponding to that new value) 
+     * @function changeTabStatus
+     * @inner
+     * @private
+     * @param {Boolean} useT - whether or not TMN is set to use a tab for its searches 
+     * */
     function changeTabStatus(useT) {
         if (useT === tmn_options.useTab) return;
         console.log("detected change in useTab value");
@@ -244,17 +252,31 @@ TRACKMENOT.TMNSearch = function () {
         }
     }
 
+    /** returns tmn_tab_id, the id for the tab 
+     * @function getTMNTab
+     * @inner
+     * @returns {Number} tmn_tab_id
+     * */
     function getTMNTab() {
         console.log("Trying to access to the tab: " + tmn_tab_id);
         return tmn_tab_id;
     }
 
+    /** Delete the TMN search tab using api.tabs.remove
+     * @function deleteTab
+     * @inner
+     * */
     function deleteTab() {
         if (tmn_tab_id === -1) return;
         api.tabs.remove(tmn_tab_id);
         tmn_tab_id = -1;
     }
 
+    /** Attempts to create a TMN search tab.
+     * @function createTab
+     * @inner
+     * @param {Object} [pendingRequest] - the pending search, if no tab exists but useTab is enabled
+     * */
     function createTab(pendingRequest) {
         if (!tmn_options.useTab || tmn_tab_id !== -1) return;
         console.log('Creating tab for TrackMeNot');
@@ -274,6 +296,12 @@ TRACKMENOT.TMNSearch = function () {
         }
     }
 
+    /** After creating a new tab, send the first search.
+     * @function iniTab
+     * @inner
+     * @param {Object} tab - the tab object returned after creating a tab
+     * @param {Object} pendingRequest - the TMN request object containing the pending search's info
+     * */
     function iniTab(tab, pendingRequest) {
         console.log("[iniTab] tab = " + JSON.stringify(tab));
         tmn_tab_id = tab.id;
@@ -287,18 +315,22 @@ TRACKMENOT.TMNSearch = function () {
 
 
 
+    // End of tab functions
 
-
-
-
+    /** Monitor user browsing behavior, and if the user searches,
+     * fire a burst of obfuscation searches.
+     * @function monitorBurst
+     * @inner
+     * */
     function monitorBurst() {
         api.webNavigation.onCommitted.addListener(function (e) {
             var url = e.url;
             var tab_id = e.tabId;
             var result = checkForSearchUrl(url);
+            //if not on a search page, log tab status if it's the TMN tab, and return
             if (!result) {
                 if (tab_id === tmn_tab_id) {
-                    console.log("TMN tab tryign to visit: " + url);
+                    console.log("TMN tab trying to visit: " + url);
                 }
                 return;
             }
@@ -585,7 +617,11 @@ TRACKMENOT.TMNSearch = function () {
 
     }
 
-    /** adds query words to incQueries array, with some kind of randomness and manipulation */
+    /** Randomly shuffle the words of input queryWords, and add them to incQueries. Does not return anything.
+     * @function getSubQuery
+     * @inner
+     * @param {Array} queryWords - words from a dummy query string
+     * */
     function getSubQuery(queryWords) {
         var incQuery = "";
         var randomArray = new Array();
@@ -604,7 +640,11 @@ TRACKMENOT.TMNSearch = function () {
     }
 
 
-    /** get a random query and replace any newline characters with spaces */
+    /** Get a randomQuery() and replace any newline characters with spaces 
+     * @function getQuery
+     * @inner
+     * @returns {String} term - the cleaned query term 
+     * */
     function getQuery() {
         var term = randomQuery();
         if (term.indexOf('\n') > 0) { // yuck, replace w' chomp();
@@ -621,8 +661,10 @@ TRACKMENOT.TMNSearch = function () {
         return term;
     }
 
-
-
+    /** Update the TMN badge-icon to Error status.
+     * @function updateOnErr 
+     * @inner
+     * */
     function updateOnErr() {
         try {
             api.browserAction.setBadgeBackgroundColor({ 'color': [255, 0, 0, 255] });
@@ -638,6 +680,11 @@ TRACKMENOT.TMNSearch = function () {
         }
     }
 
+    /** Update the TMN badge-icon to display the next search.
+     * @function updateOnSend
+     * @inner
+     * @param {String} queryToSend - the next dummy query string
+     * */
     function updateOnSend(queryToSend) {
         try {
             api.browserAction.setBadgeBackgroundColor({ 'color': [113, 113, 198, 255] })
@@ -653,6 +700,17 @@ TRACKMENOT.TMNSearch = function () {
         }
     }
 
+    /** Given a set of possible parameters of the current status of TMN, assemble a logEntry and return it.
+     * @function createLog
+     * @inner
+     * @param {String} type - the type of logEntry, from {"URLMap", "error"}
+     * @param {String} engine - the current search engine
+     * @param {String} [mode] - the current running mode tmn_mode of TMN
+     * @param {String} [query] - the current dummy query string
+     * @param {String} [id] - Deprecated: logEntry id, unused/deprecated
+     * @param {String} [asearch] - the URL for "a search"
+     * @returns {Object} logEntry
+     *  */
     function createLog(type, engine, mode, query, id, asearch) {
         var logEntry = {};
         logEntry.type = type;
@@ -665,8 +723,11 @@ TRACKMENOT.TMNSearch = function () {
     }
 
 
-    /** gets a query, and sends it, either implicitly (calling sendQuery with null)
-     * or explicitly after splitting >3 word queries. seems like it could use revision */
+    /** Gets a new dummy query string with getQuery() and sends it, 
+     * either implicitly (calling sendQuery with null) or explicitly after splitting >3 word queries. 
+     * @function doSearch
+     * @inner
+     * */
     function doSearch() {
         var newquery = getQuery();
         try {
@@ -815,7 +876,13 @@ TRACKMENOT.TMNSearch = function () {
         return arr;
     }
 
-
+    /** Takes a TMN-encoded base-URL for a search engine, "url", and a search query string "query", and combines
+     * them to make a sendable search URL  
+     * @function queryToURL
+     * @inner
+     * @param {String} url - the TMN-encoded base-URL for a search engine
+     * @param {query} query - the dummy query term generated by TMN
+     * */
     function queryToURL(url, query) {
         query = query.toLowerCase();
         var urlQuery = url.replace('|', query);
@@ -1107,12 +1174,19 @@ TRACKMENOT.TMNSearch = function () {
     }
     
     //from https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage/StorageArea/get
-    //** wrapper for console.log to pass as a callback function when getting items from local storage */
+    /** wrapper for console.log to pass as a callback function when getting items from local storage 
+     * @function logGotItem
+     * @inner */
     function logGotItem(item) {
         console.log(item);
     }
 
-    /** wrapper function to access local storage, using storage item key and a callback function to pass the got item(s) */
+    /** wrapper function to access local storage, using storage item key and a callback function to pass the got item(s) 
+     * @param {Array} keys - the identifiers for stored properties of TrackMeNot (e.g. ["options_tmn", "gen_queries", "engines_tmn", "logs_tmn"])
+     * @param {Function} callback - the callback function to feed the stored items to (e.g. TRACKMENOT.TMNSearch._restoreTMN)
+     * @function getStorage
+     * @inner
+     * */
 	function getStorage(keys,callback) {
 		try {
 			let gettingItem = api.storage.local.get(keys);
@@ -1201,8 +1275,10 @@ TRACKMENOT.TMNSearch = function () {
     }
 
     /** sets search engines to new set of values if new set of values present, 
-     * otherwise restores to default and overwrites local storage engine settings */
-
+     * otherwise restores to default and overwrites local storage engine settings 
+     * @function setEngines
+     * @inner
+     * */
     function setEngines(item) {
         if (item) {
             tmn_engines = item;
@@ -1227,7 +1303,9 @@ TRACKMENOT.TMNSearch = function () {
             handleRequest(request, sender, sendResponse);
         },
 
-        /** called on api.storage.onChanged event listener, should update options and engines with new values */
+        /** called on api.storage.onChanged event listener, should update options and engines with new values 
+         * @callback
+         * */
         _logStorageChange: function (items) {
             console.log('detected a change in api.storage within trackmenot.js');
             console.log(items);
@@ -1241,7 +1319,9 @@ TRACKMENOT.TMNSearch = function () {
             }
         },
         
-        /** callback function called on extension startup with contents of local storage for engines, options, logs, and gen_queries */
+        /** callback function called on extension startup with contents of local storage for engines, options, logs, and gen_queries 
+         * @callback
+         * */
         _restoreTMN: function (items) {
             if (!items["engines_tmn"]) {
                console.log("could not find saved search engine options in local storage, setting default search engines");			

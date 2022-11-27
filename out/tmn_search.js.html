@@ -1,23 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
     <meta charset="utf-8">
-    <title>JSDoc: Source: tmn_search.js</title>
-
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
+    <title>tmn_search.js - TrackMeNot JS Docs</title>
+    
+    
+    
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-
 <body>
 
-<div id="main">
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
 
-    <h1 class="page-title">Source: tmn_search.js</h1>
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="https://trackmenot.io" target="_blank" class="menu-item" id="TMN Official Site" >Project Website</a></h2><h3>Modules</h3><ul><li><a href="TRACKMENOT.module_TMNInjected.html">TMNInjected</a></li><li><a href="TRACKMENOT.module_TMNSearch.html">TMNSearch</a><ul class='methods'><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.createLog#~createLog">createLog</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.createTab#~createTab">createTab</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.deleteTab#~deleteTab">deleteTab</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.doSearch#~doSearch">doSearch</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.getEngineById#~getEngineById">getEngineById</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.getQuery#~getQuery">getQuery</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.getStorage#~getStorage">getStorage</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.getSubQuery#~getSubQuery">getSubQuery</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.getTMNTab#~getTMNTab">getTMNTab</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.iniTab#~iniTab">iniTab</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.logGotItem#~logGotItem">logGotItem</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.monitorBurst#~monitorBurst">monitorBurst</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.queryToURL#~queryToURL">queryToURL</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.setEngines#~setEngines">setEngines</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.updateOnErr#~updateOnErr">updateOnErr</a></li><li data-type='method'><a href="TRACKMENOT.module_TMNSearch.html#.updateOnSend#~updateOnSend">updateOnSend</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#TMNShowEngines">TMNShowEngines</a></li><li><a href="global.html#logGotItem">logGotItem</a></li><li><a href="global.html#saveOptions">saveOptions</a></li><li><a href="global.html#toggleTabFrame">toggleTabFrame</a></li><li><a href="global.html#updateEngineList">updateEngineList</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">tmn_search.js</h1>
+    
 
     
 
@@ -52,7 +76,7 @@ if (chrome === undefined) {
 if (!TRACKMENOT)
     var TRACKMENOT = {};
 
-/** A function to create the TRACKMENOT.TMNInjected object, 
+/** The TRACKMENOT.TMNInjected object, 
  * which manages the search behavior and user simulation within TMN's tab,
  * or in the background in "stealth" search mode 
  * @exports TRACKMENOT.TMNInjected
@@ -66,11 +90,10 @@ TRACKMENOT.TMNInjected = function() {
     var current_request_id = 1;
     var tmnCurrentURL = '';
     var engine = '';
+    var last_engine = ''; //unused
     //    var allEvents = ['blur','change','click','dblclick','DOMMouseScroll','focus','keydown','keypress','keyup','load','mousedown','mousemove','mouseout','mouseover','mouseup','select'];
 
 
-    /** test test 
-     * */
     var testAd_google = function(anchorClass, anchorlink) {
         return (anchorlink
                 &amp;&amp; (anchorClass === 'l' || anchorClass === 'l vst')
@@ -715,19 +738,23 @@ api.runtime.onMessage.addListener(TRACKMENOT.TMNInjected.handleRequest);
 
 
 
+    
+    
 </div>
-
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="TRACKMENOT.module_TMNInjected.html">TMNInjected</a></li><li><a href="TRACKMENOT.module_TMNSearch.html">TMNSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#TMNShowEngines">TMNShowEngines</a></li><li><a href="global.html#logGotItem">logGotItem</a></li><li><a href="global.html#saveOptions">saveOptions</a></li><li><a href="global.html#toggleTabFrame">toggleTabFrame</a></li><li><a href="global.html#updateEngineList">updateEngineList</a></li></ul>
-</nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.0</a> on Sat Nov 26 2022 18:56:49 GMT-0500 (Eastern Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.0</a> on Sun Nov 27 2022 15:08:48 GMT-0500 (Eastern Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+
 </body>
 </html>

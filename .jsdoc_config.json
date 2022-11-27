@@ -1,0 +1,46 @@
+{
+    "source": {
+        "include": [ "trackmenot.js", "tmn_search.js", "menu-script.js", "option-script.js" ]
+    },
+    "opts": {
+      "template": "docdash"
+    },
+    "docdash": {
+        "search": true,
+        "meta": {                       // Meta information options (mostly for search engines that have not indexed your site yet)
+            "title": "TrackMeNot JS Docs",  // Also will be used as postfix to actualy page title, prefixed with object/document name
+            "description": "",          // Description of overal contents of your website
+            "keyword": ""               // Keywords for search engines
+        },
+        "menu": {                       // Adding additional menu items after Home
+            "Project Website": {        // Menu item name
+                "href":"https://trackmenot.io", //the rest of HTML properties to add to manu item
+                "target":"_blank",
+                "class":"menu-item",
+                "id":"TMN Official Site"
+            }
+        }
+    }
+    /*"templates": {
+        "search": true,
+        "better-docs": {
+            "name": "TrackMeNot",
+            "logo": "",
+            "title": "TrackMeNot", // HTML title
+            "css": "style.css",
+            //"trackingCode": "tracking-code-which-will-go-to-the-HEAD",
+            "hideGenerator": true,
+            "navLinks": [
+                {
+                    "label": "Github",
+                    "href": "https://github.com/dwaydwaydway/TrackMeNot-Chrome"
+                },
+                {
+                    "label": "TMN Site",
+                    "href": "https://trackmenot.io"
+                }
+            ]
+        }
+    }*/
+    
+}

@@ -24,7 +24,7 @@ if (chrome === undefined) {
 if (!TRACKMENOT)
     var TRACKMENOT = {};
 
-/** A function to create the TRACKMENOT.TMNInjected object, 
+/** The TRACKMENOT.TMNInjected object, 
  * which manages the search behavior and user simulation within TMN's tab,
  * or in the background in "stealth" search mode 
  * @exports TRACKMENOT.TMNInjected
