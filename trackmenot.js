@@ -28,7 +28,6 @@ if (!TRACKMENOT) var TRACKMENOT = {};
 
 TRACKMENOT.TMNSearch = function () {
     var tmn_tab_id = -1;
-    var randomwalk_tab_id = -1;
 
     var debug_ = true; //flag in unused console.log override function
     var useIncrementals = true;
@@ -228,7 +227,6 @@ TRACKMENOT.TMNSearch = function () {
         tmn_tab_id = -1;
     }
 
-
     function deleteRWTab() {
         api.tabs.remove(randomwalk_tab_id);
         randomwalk_tab_id = -1;
@@ -408,7 +406,7 @@ TRACKMENOT.TMNSearch = function () {
 
 
     function extractQueries(html) {
-        var forbiddenChar = new RegExp("^[ @#<>\"\\\/,;'�{}:?%|\^~`=]", "g");
+        var forbiddenChar = new RegExp("^[ @#<>\"\\\/,;'ï¿½{}:?%|\^~`=]", "g");
         var splitRegExp = new RegExp('^[\\[\\]\\(\\)\\"\']', "g");
 
         if (!html) {
@@ -492,7 +490,7 @@ TRACKMENOT.TMNSearch = function () {
     // returns # of keywords added
     function filterKeyWords(rssTitles) {
         var addStr = ""; //tmp-debugging
-        var forbiddenChar = new RegExp("[ @#<>\"\\\/,;'�{}:?%|\^~`=]+", "g");
+        var forbiddenChar = new RegExp("[ @#<>\"\\\/,;'ï¿½{}:?%|\^~`=]+", "g");
         var splitRegExp = new RegExp('[\\[\\]\\(\\)\\"\']+', "g");
         var wordArray = rssTitles.split(forbiddenChar);
 
@@ -504,7 +502,7 @@ TRACKMENOT.TMNSearch = function () {
                         wordArray[i + 1].match(splitRegExp))) {
                         var nextWord = wordArray[i + 1]; // added new check here -dch
                         if (nextWord !== nextWord.toLowerCase()) {
-                            nextWord = trim(nextWord.toLowerCase().replace(/\s/g, '').replace(/[(<>"'�&]/g, ''));
+                            nextWord = trim(nextWord.toLowerCase().replace(/\s/g, '').replace(/[(<>"'ï¿½&]/g, ''));
                             if (nextWord.length > 1) {
                                 word += ' ' + nextWord;
                             }
@@ -720,7 +718,7 @@ TRACKMENOT.TMNSearch = function () {
     }
 
 
-    async function sendQuery(queryToSend) {
+    function sendQuery(queryToSend) {
         tmn_scheduledSearch = false;
         //Q: where is engine set, as used here?
         var url = getEngineById(engine).urlmap;
@@ -732,6 +730,7 @@ TRACKMENOT.TMNSearch = function () {
                 return;
             }
         }
+        randomWalk(0, 1, queryToURL(url, queryToSend));//set random walk
         if (Math.random() < 0.9) queryToSend = queryToSend.toLowerCase(); //high chance of setting all lowercase
         if (queryToSend[0] === ' ') queryToSend = queryToSend.substr(1); //remove the first space
         tmn_hasloaded = false;
@@ -748,13 +747,9 @@ TRACKMENOT.TMNSearch = function () {
                 api.tabs.sendMessage(tmn_tab_id, TMNReq);
                 console.log('Message sent to the tab: ' + tmn_tab_id + ' : ' + JSON.stringify(TMNReq));
             }
-            var queryURL = queryToURL(url, queryToSend);
-            console.log("The encoded URL is " + queryURL);
-            randomWalk(queryURL, 0, roll(1, 5));
         } else {
             var queryURL = queryToURL(url, queryToSend);
             console.log("The encoded URL is " + queryURL);
-            randomWalk(queryURL, 0, roll(1, 5));
             var xhr = new XMLHttpRequest();
             xhr.open("GET", queryURL, true);
             xhr.onreadystatechange = function () {
@@ -1010,8 +1005,6 @@ TRACKMENOT.TMNSearch = function () {
             if (!tmn_options.saveLogs)
                 api.storage.local.set({ "logs_tmn": "" });
         });
-
-
         api.webRequest.onBeforeRequest.addListener(
             autosuggestionListener,
             { urls: ["https://www.google.com/complete/search?q&*", "https://www.google.com/complete/search?q=*"] },
@@ -1051,7 +1044,6 @@ TRACKMENOT.TMNSearch = function () {
             }
             filter.write(encoder.encode(str));
             filter.disconnect();
-
         }
         return {};
     }
@@ -1102,17 +1094,16 @@ TRACKMENOT.TMNSearch = function () {
                 });
                 return;
             case "pageLoaded":
-                // if (!tmn_hasloaded) {
-                tmn_hasloaded = true;
-                clearTimeout(tmn_errTimeout);
-                reschedule();
-                // if (Math.random() < 1) {
-                // if (true) {
-                //     var time = roll(10, 1000);
-                //     window.setTimeout(sendClickEvent, time);
-                // }
-                sendResponse({});
-                // }
+                if (!tmn_hasloaded) {
+                    tmn_hasloaded = true;
+                    clearTimeout(tmn_errTimeout);
+                    reschedule();
+                    if (Math.random() < 1) {
+                        var time = roll(10, 1000);
+                        window.setTimeout(sendClickEvent, time);
+                    }
+                    sendResponse({});
+                }
                 break;
             case "tmnError": //Remove timer and then reschedule;
                 clearTimeout(tmn_errTimeout);
