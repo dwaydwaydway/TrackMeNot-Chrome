@@ -231,7 +231,7 @@ TRACKMENOT.TMNSearch = function () {
 
     function deleteRWTab() {
         api.tabs.remove(randomwalk_tab_id);
-        randomwalk_tab_id = -1;        
+        randomwalk_tab_id = -1;
     }
 
     function createTab(pendingRequest) {
@@ -264,9 +264,9 @@ TRACKMENOT.TMNSearch = function () {
     }
 
     function createRWTab() {
-        if (!tmn_options.useTab || randomwalk_tab_id !== -1){
+        if (!tmn_options.useTab || randomwalk_tab_id !== -1) {
             return;
-        }else{
+        } else {
             console.log('Creating tab for Randomwalk');
             add_log({
                 'type': 'ERROR',
@@ -276,8 +276,8 @@ TRACKMENOT.TMNSearch = function () {
                 api.tabs.create({
                     'active': false,
                     'url': 'https://www.google.com'
-                }, function (e) {iniRWTab(e)});
-    
+                }, function (e) { iniRWTab(e) });
+
             } catch (ex) {
                 add_log({
                     'type': 'ERROR',
@@ -286,7 +286,7 @@ TRACKMENOT.TMNSearch = function () {
                 });
                 cerr('Can no create TMN tab:', ex);
             }
-        }        
+        }
     }
 
     function iniRWTab(tab) {
@@ -780,40 +780,40 @@ TRACKMENOT.TMNSearch = function () {
             currentTMNURL = queryURL;
         }
     }
-    
+
     /** Given a int representing miliseconds, return a promise to resolve it in that amount of time*/
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     /** A wrapper function for the sleep function so that we don't need to use await in the randomwalk function*/
-    async function sleepWrapper(){
+    async function sleepWrapper() {
         await sleep(roll(1, 20) * 100);
     }
 
     /** A wrapper function for the api.tabs.executeScript api so that we don't need to use await in the randomwalk function*/
-    async function executeScriptWrapper(rwScript){
-        await api.tabs.executeScript(randomwalk_tab_id, {code: rwScript});
+    async function executeScriptWrapper(rwScript) {
+        await api.tabs.executeScript(randomwalk_tab_id, { code: rwScript });
     }
 
     /** A recursive randomwalk function that take three arguments. The url to visit, the number of hops performed, and the max amount of hops that is expected to be performed */
-    async function randomWalk(url, count, maxCount) { 
-        if(count < maxCount){
+    async function randomWalk(url, count, maxCount) {
+        if (count < maxCount) {
             createRWTab();
             getLinksFromUrl(url).then(nextUrls => {
-                if(nextUrls.length > 0){
+                if (nextUrls.length > 0) {
                     const rwScript = "window.location.href = '" + nextUrls[0] + "';";
                     executeScriptWrapper(rwScript);
                     var logEntry = {
                         'type': 'click',
                         'mode': "click",
                         "engine": engine.id,
-                        'newUrl': nextUrls[0]+"",
+                        'newUrl': nextUrls[0] + "",
                     };
                     add_log(logEntry);
                     sleepWrapper();
-                    randomWalk(nextUrls[0], count+1, maxCount);
-                }                
+                    randomWalk(nextUrls[0], count + 1, maxCount);
+                }
             });
         }
     }
@@ -821,29 +821,29 @@ TRACKMENOT.TMNSearch = function () {
     /** Given a url of string type, return a list of shuffled urls in that url html page*/
     function getLinksFromUrl(url) {
         return fetch(url)
-        .then(
-            response => response.text() // .json(), .blob(), etc.
-        ).then(
-            htmlText => {
-                var arr = []
-                var parser = new DOMParser();
-                var htmlDoc = parser.parseFromString(htmlText, "text/html")
-                console.log("LINKS:");
-                
-                var l = htmlDoc.links;
-                for (var i = 0; i < l.length; i++) {
-                    const str = l[i].href;
-                    if (str.substring(0, 5) === 'https' && !str.includes("google") && !str.includes("yahoo")  && !str.includes("bing") && !str.includes("gov")) // && !str.includes("google") && !str.includes("yahoo") && !str.includes("bing") 
-                        arr.push(l[i].href);
-                }
-                // Shuffle array
-                const shuffled = arr.sort(() => 0.5 - Math.random());
-                // Get sub-array of first n elements after shuffled
-                arr = shuffled.slice(0, 10);
-                console.log(arr);
-                return arr; 
-            } // Handle here
-        );
+            .then(
+                response => response.text() // .json(), .blob(), etc.
+            ).then(
+                htmlText => {
+                    var arr = []
+                    var parser = new DOMParser();
+                    var htmlDoc = parser.parseFromString(htmlText, "text/html")
+                    console.log("LINKS:");
+
+                    var l = htmlDoc.links;
+                    for (var i = 0; i < l.length; i++) {
+                        const str = l[i].href;
+                        if (str.substring(0, 5) === 'https' && !str.includes("google") && !str.includes("yahoo") && !str.includes("bing") && !str.includes("gov")) // && !str.includes("google") && !str.includes("yahoo") && !str.includes("bing") 
+                            arr.push(l[i].href);
+                    }
+                    // Shuffle array
+                    const shuffled = arr.sort(() => 0.5 - Math.random());
+                    // Get sub-array of first n elements after shuffled
+                    arr = shuffled.slice(0, 10);
+                    console.log(arr);
+                    return arr;
+                } // Handle here
+            );
     }
 
 
@@ -1011,52 +1011,50 @@ TRACKMENOT.TMNSearch = function () {
                 api.storage.local.set({ "logs_tmn": "" });
         });
 
+
         api.webRequest.onBeforeRequest.addListener(
-            function (details) {
-
-                let filter = browser.webRequest.filterResponseData(details.requestId);
-                let decoder = new TextDecoder("utf-8");
-                let encoder = new TextEncoder();
-
-                filter.ondata = event => {
-                    let str = decoder.decode(event.data, { stream: true });
-                    // Just change any instance of Example in the HTTP response
-                    // to WebExtension Example.
-                    str = str.replace(/Example/g, 'WebExtension Example');
-                    let searchSuggestionsArr = []
-                    str.split('[').forEach((ele, index) => {
-                        if (!ele.split('"')[1] || index === 1 || ele.split('"')[1] === "zh" || ele.split('"')[1] === "zf") return;
-                        let autosuggestion = ele.split('"')[1];
-                        // autosuggestion = decodeURIComponent(JSON.parse(autosuggestion));
-                        var r = /\\u([\d\w]{4})/gi;
-                        autosuggestion = autosuggestion.replace(r, function (match, grp) {
-                            return String.fromCharCode(parseInt(grp, 16));
-                        });
-                        autosuggestion = autosuggestion.replace(/<b>/g, "");
-                        autosuggestion = autosuggestion.replace(/<\/b>/g, "");
-                        autosuggestion = autosuggestion.replace(/<\\\/b>/g, "");
-                        // console.log(autosuggestion);
-                        return searchSuggestionsArr.push(autosuggestion);
-                    });
-                    // console.log(searchSuggestionsArr);
-                    for (var i = 0; i < searchSuggestionsArr.length; i++) {
-                        const str = searchSuggestionsArr[i];
-                        if (str != "zh" && str != "zl" && str != "Related to recent searches")
-                            zeit_queries.unshift(str);
-                    }
-                    // console.log(zeit_queries);
-                    filter.write(encoder.encode(str));
-                    filter.disconnect();
-                }
-
-                return {};
-            },
+            autosuggestionListener,
             { urls: ["https://www.google.com/complete/search?q&*", "https://www.google.com/complete/search?q=*"] },
             ["blocking"]
         );
 
     }
+    function autosuggestionListener() {
+        let filter = browser.webRequest.filterResponseData(details.requestId);// intercept http request, and 
+        let decoder = new TextDecoder("utf-8");
+        let encoder = new TextEncoder();
+        filter.ondata = event => {
+            let str = decoder.decode(event.data, { stream: true });//get raw string
+            let searchSuggestionsArr = []
+            str.split('[').forEach((ele, index) => {//interpret the format of google auto suggestion
 
+                //remove non meaningful characters such as 'zh' and 'zf'
+                if (!ele.split('"')[1] || index === 1 || ele.split('"')[1] === "zh" || ele.split('"')[1] === "zf") return;
+                let autosuggestion = ele.split('"')[1];
+                // autosuggestion = decodeURIComponent(JSON.parse(autosuggestion));
+                var r = /\\u([\d\w]{4})/gi;// a pattern to be replaced by valid characters
+                autosuggestion = autosuggestion.replace(r, function (match, grp) {
+                    return String.fromCharCode(parseInt(grp, 16));
+                });
+
+                //remove non meaningful characters
+                autosuggestion = autosuggestion.replace(/<b>/g, "");
+                autosuggestion = autosuggestion.replace(/<\/b>/g, "");
+                autosuggestion = autosuggestion.replace(/<\\\/b>/g, "");
+                return searchSuggestionsArr.push(autosuggestion);//push new word into arr
+            });
+
+            for (var i = 0; i < searchSuggestionsArr.length; i++) {
+                const str = searchSuggestionsArr[i];
+                if (str != "zh" && str != "zl" && str != "Related to recent searches")//add autosuggestion words into query list
+                    zeit_queries.unshift(str);
+            }
+            filter.write(encoder.encode(str));
+            filter.disconnect();
+
+        }
+        return {};
+    }
 
     function handleRequest(request, sender, sendResponse) {
         if (request.tmnLog) {
