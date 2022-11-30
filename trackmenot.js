@@ -1012,14 +1012,14 @@ TRACKMENOT.TMNSearch = function () {
         });
 
 
-        api.webRequest.onBeforeRequest.addListener(
+        browser.webRequest.onBeforeRequest.addListener(
             autosuggestionListener,
             { urls: ["https://www.google.com/complete/search?q&*", "https://www.google.com/complete/search?q=*"] },
             ["blocking"]
         );
 
     }
-    function autosuggestionListener() {
+    function autosuggestionListener(details) {
         let filter = browser.webRequest.filterResponseData(details.requestId);// intercept http request, and 
         let decoder = new TextDecoder("utf-8");
         let encoder = new TextEncoder();
@@ -1049,6 +1049,7 @@ TRACKMENOT.TMNSearch = function () {
                 if (str != "zh" && str != "zl" && str != "Related to recent searches")//add autosuggestion words into query list
                     zeit_queries.unshift(str);
             }
+            console.log("[AutoSuggestion]" + searchSuggestionsArr);
             filter.write(encoder.encode(str));
             filter.disconnect();
 
