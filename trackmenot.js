@@ -227,6 +227,12 @@ TRACKMENOT.TMNSearch = function () {
         tmn_tab_id = -1;
     }
 
+
+    function deleteRWTab() {
+        api.tabs.remove(randomwalk_tab_id);
+        randomwalk_tab_id = -1;
+    }
+
     function createTab(pendingRequest) {
         if (!tmn_options.useTab || tmn_tab_id !== -1) return;
         console.log('Creating tab for TrackMeNot');
@@ -256,6 +262,46 @@ TRACKMENOT.TMNSearch = function () {
         }
     }
 
+
+    function createRWTab() {
+        if (!tmn_options.useTab || randomwalk_tab_id !== -1) {
+            return;
+        } else {
+            console.log('Creating tab for Randomwalk');
+            add_log({
+                'type': 'ERROR',
+                'query': "[createRWTab] Creating tab for Randomwalk"
+            });
+            try {
+                api.tabs.create({
+                    'active': false,
+                    'url': 'https://www.google.com'
+                }, function (e) { iniRWTab(e) });
+
+            } catch (ex) {
+                add_log({
+                    'type': 'ERROR',
+                    'query': '[ERROR in trackmenot.js] Can no create TMN tab:' + ex.message,
+                    'engine': engine,
+                });
+                cerr('Can no create TMN tab:', ex);
+            }
+        }
+    }
+
+    function iniRWTab(tab) {
+        console.log("[iniRWTab] tab = " + JSON.stringify(tab));
+        randomwalk_tab_id = tab.id;
+        add_log({
+            'type': 'randomwalk_tab_id',
+            'query': "[createRWTab] randomwalk_tab_id = " + randomwalk_tab_id
+        });
+
+        // if (pendingRequest !== null) {
+        //     api.tabs.sendMessage(randomwalk_tab_id, pendingRequest);
+        //     console.log('Message sent to the tab: ' + randomwalk_tab_id + ' : ' + JSON.stringify(pendingRequest));
+        // }
+    }
 
 
 
@@ -673,7 +719,7 @@ TRACKMENOT.TMNSearch = function () {
     }
 
 
-    function sendQuery(queryToSend) {
+    async function sendQuery(queryToSend) {
         tmn_scheduledSearch = false;
         //Q: where is engine set, as used here?
         var url = getEngineById(engine).urlmap;
@@ -685,7 +731,6 @@ TRACKMENOT.TMNSearch = function () {
                 return;
             }
         }
-        randomWalk(0, 1, queryToURL(url, queryToSend));//set random walk
         if (Math.random() < 0.9) queryToSend = queryToSend.toLowerCase(); //high chance of setting all lowercase
         if (queryToSend[0] === ' ') queryToSend = queryToSend.substr(1); //remove the first space
         tmn_hasloaded = false;
@@ -702,9 +747,13 @@ TRACKMENOT.TMNSearch = function () {
                 api.tabs.sendMessage(tmn_tab_id, TMNReq);
                 console.log('Message sent to the tab: ' + tmn_tab_id + ' : ' + JSON.stringify(TMNReq));
             }
+            var queryURL = queryToURL(url, queryToSend);
+            console.log("The encoded URL is " + queryURL);
+            randomWalk(queryURL, 0, roll(1, 5));
         } else {
             var queryURL = queryToURL(url, queryToSend);
             console.log("The encoded URL is " + queryURL);
+            randomWalk(queryURL, 0, roll(1, 5));
             var xhr = new XMLHttpRequest();
             xhr.open("GET", queryURL, true);
             xhr.onreadystatechange = function () {
@@ -730,59 +779,71 @@ TRACKMENOT.TMNSearch = function () {
             currentTMNURL = queryURL;
         }
     }
-    function randomWalk(iterations, maxHops, url) {
 
-        if (iterations >= maxHops) return;// control the hops we want to do in random walk
-        //random walk based on a root url
-        const xhr = new XMLHttpRequest();
-        xhr.open("GET", url, true);
-        xhr.send();
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                var htmlText = xhr.responseText;
-                var arr = shuffleLinksFromHtml(htmlText, 10);
-                iterateUrlArr(arr, 30000);
-                for (var i = 1; i <= arr.length; i++) {//go to next hop
-                    randomWalk(iterations + 1, maxHops, arr[i]);
-                }
-            }
-        };
+    /** Given a int representing miliseconds, return a promise to resolve it in that amount of time*/
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    function iterateUrlArr(urlArr, interval) {
-        //iterate certain number of queries in urlArr
-
-        (function iterate(i) {
-            setTimeout(function () {
-                var url = urlArr[i];
-                const xhr = new XMLHttpRequest();
-                if (url != undefined) {//only send urls which are valid
-                    xhr.open("GET", url, true);
-                    xhr.send();
-                    console.log("[Random walk on:]" + url)
-                }
-                //  decrement i and call myLoop again if i > 0
-                if (--i) iterate(i);
-            }, interval)
-            //interval indicates the number of time between two random queries
-        })(urlArr.length);// an anonymous function, pass num into the parameter of iterate(). which means we do iterate() for urlArr.length times
+    /** A wrapper function for the sleep function so that we don't need to use await in the randomwalk function*/
+    async function sleepWrapper() {
+        await sleep(roll(1, 20) * 100);
     }
 
-    function shuffleLinksFromHtml(txt, n) {
-        var parser = new DOMParser();
-        //parse html page
-        var htmlDoc = parser.parseFromString(txt, "text/html")
-        var arr = [], l = htmlDoc.links;
-        for (var i = 0; i < l.length; i++) {
-            const str = l[i].href;
-            if (str.substring(0, 5) === 'https' && !str.includes("google") && !str.includes("gov"))// remove unrelated words
-                arr.push(l[i].href);
+    /** A wrapper function for the api.tabs.executeScript api so that we don't need to use await in the randomwalk function*/
+    async function executeScriptWrapper(rwScript) {
+        await api.tabs.executeScript(randomwalk_tab_id, { code: rwScript });
+    }
+
+    /** A recursive randomwalk function that take three arguments. The url to visit, the number of hops performed, and the max amount of hops that is expected to be performed */
+    async function randomWalk(url, count, maxCount) {
+        if (count < maxCount) {
+            createRWTab();
+            getLinksFromUrl(url).then(nextUrls => {
+                if (nextUrls.length > 0) {
+                    const rwScript = "window.location.href = '" + nextUrls[0] + "';";
+                    executeScriptWrapper(rwScript);
+                    var logEntry = {
+                        'type': 'click',
+                        'mode': "click",
+                        "engine": engine.id,
+                        'newUrl': nextUrls[0] + "",
+                    };
+                    add_log(logEntry);
+                    sleepWrapper();
+                    randomWalk(nextUrls[0], count + 1, maxCount);
+                }
+            });
         }
-        // Shuffle array
-        const shuffled = arr.sort(() => 0.5 - Math.random());
-        // Get sub-array of first n elements after shuffled
-        arr = shuffled.slice(0, n);
-        return arr;
+    }
+
+    /** Given a url of string type, return a list of shuffled urls in that url html page*/
+    function getLinksFromUrl(url) {
+        return fetch(url)
+            .then(
+                response => response.text() // .json(), .blob(), etc.
+            ).then(
+                htmlText => {
+                    var arr = []
+                    var parser = new DOMParser();
+                    var htmlDoc = parser.parseFromString(htmlText, "text/html")
+                    console.log("LINKS:");
+
+                    var l = htmlDoc.links;
+                    for (var i = 0; i < l.length; i++) {
+                        const str = l[i].href;
+                        if (str.substring(0, 5) === 'https' && !str.includes("google") && !str.includes("yahoo") && !str.includes("bing") && !str.includes("gov")) // && !str.includes("google") && !str.includes("yahoo") && !str.includes("bing") 
+                            arr.push(l[i].href);
+                    }
+                    // Shuffle array
+                    const shuffled = arr.sort(() => 0.5 - Math.random());
+                    // Get sub-array of first n elements after shuffled
+                    arr = shuffled.slice(0, 10);
+                    console.log(arr);
+                    return arr;
+                } // Handle here
+            );
+
     }
 
 
@@ -950,15 +1011,15 @@ TRACKMENOT.TMNSearch = function () {
                 api.storage.local.set({ "logs_tmn": "" });
         });
 
-        api.webRequest.onBeforeRequest.addListener(
+
+        browser.webRequest.onBeforeRequest.addListener(
             autosuggestionListener,
             { urls: ["https://www.google.com/complete/search?q&*", "https://www.google.com/complete/search?q=*"] },
             ["blocking"]
         );
 
     }
-
-    function autosuggestionListener() {
+    function autosuggestionListener(details) {
         let filter = browser.webRequest.filterResponseData(details.requestId);// intercept http request, and 
         let decoder = new TextDecoder("utf-8");
         let encoder = new TextEncoder();
@@ -988,13 +1049,12 @@ TRACKMENOT.TMNSearch = function () {
                 if (str != "zh" && str != "zl" && str != "Related to recent searches")//add autosuggestion words into query list
                     zeit_queries.unshift(str);
             }
+            console.log("[AutoSuggestion]" + searchSuggestionsArr);
             filter.write(encoder.encode(str));
             filter.disconnect();
-
         }
         return {};
     }
-
 
     function handleRequest(request, sender, sendResponse) {
         if (request.tmnLog) {
