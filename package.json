@@ -5,7 +5,7 @@
   "main": "trackmenot.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "generate-docs": "jsdoc --configure .jsdoc_config.json -t ./node_modules/docdash --verbose"
+    "generate-docs": "jsdoc --configure .jsdoc_config.json -R docs_homepage.md -t ./node_modules/docdash --verbose"
   },
   "repository": {
     "type": "git",

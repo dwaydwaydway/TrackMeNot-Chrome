@@ -26,11 +26,12 @@ if (!TRACKMENOT)
 
 /** The TRACKMENOT.TMNInjected object, 
  * which manages the search behavior and user simulation within TMN's tab,
- * or in the background in "stealth" search mode 
+ * or in the background in "stealth" search mode. Created in tmn_search.js
  * @exports TRACKMENOT.TMNInjected
  * @property {number} current_request_id - the id of the current search request, to prevent duplicate searches 
  * @property {string} tmnCurrentURL - the current search URL, used to keep track of the current search and for message handling/passing with the high-level TMNSearch object in trackmenot.js
  * @property {string} engine - the search engine used in the current search, parsed from the parameter set by TMNSearch
+ * @property {string} last_engine - deprecated/unused
  *  */
 TRACKMENOT.TMNInjected = function() {
     var debug_script = true;
@@ -41,7 +42,14 @@ TRACKMENOT.TMNInjected = function() {
     var last_engine = ''; //unused
     //    var allEvents = ['blur','change','click','dblclick','DOMMouseScroll','focus','keydown','keypress','keyup','load','mousedown','mousemove','mouseout','mouseover','mouseup','select'];
 
-
+    /** function that checks an anchorClass and anchorlink for characteristic properties
+     * of a Google advertisement. 
+     * @function testAd_google
+     * @inner
+     * @param {string} anchorClass
+     * @param {string} anchorlink
+     * @returns {Boolean} if the inputs look like a Google ad
+     * */
     var testAd_google = function(anchorClass, anchorlink) {
         return (anchorlink
                 && (anchorClass === 'l' || anchorClass === 'l vst')
@@ -49,11 +57,27 @@ TRACKMENOT.TMNInjected = function() {
                 && anchorlink.indexOf('https') !== 0);
     }
 
+    /** Deprecated function to check anchorClass and anchorlink for characteristic
+     * properties of a yahoo ad. Always returns false
+     * @function testAd_yahoo
+     * @inner
+     * @param {string} anchorClass
+     * @param {string} anchorlink
+     * @returns {Boolean} false
+     * */
     var testAd_yahoo = function(anchorClass, anchorlink) {
 		return false;
         //return (anchorClass === '\"yschttl spt\"' || anchorClass === 'yschttl spt');
     }
 
+    /** Deprecated function to check anchorClass and anchorlink for characteristic
+     * properties of a yahoo ad. Always returns false
+     * @function testAd_yahoo
+     * @inner
+     * @param {string} anchorClass
+     * @param {string} anchorlink
+     * @returns {Boolean} false
+     * */
     var testAd_aol = function(anchorClass, anchorlink) {
         return (anchorClass === '\"find\"' || anchorClass === 'find'
                 && anchorlink.indexOf('https') !== 0 && anchorlink.indexOf('aol') < 0);
@@ -219,10 +243,22 @@ TRACKMENOT.TMNInjected = function() {
             'regexmap': "^(https?:\/\/www\.baidu\.com\/s\?.*?wd=)([^&]*)(.*)$"
         }
     ];
+
+    /** Utility function that generates a random number between min and max, inclusive.
+     * @function roll
+     * @inner
+     * @param {Number} min - the minimum
+     * @param {Number} max - the maximum
+     * */
     function roll(min, max) {
         return Math.floor(Math.random() * (max + 1)) + min;
     }
 
+    /** Utility function to log a message to the console
+     * @function cout
+     * @inner
+     * @param {string} msg
+     * */
     function cout(msg) {
         console.log(msg);
     }
@@ -231,14 +267,25 @@ TRACKMENOT.TMNInjected = function() {
     //         console.log("debug: " + msg);
     // }
 
-
+    /** Removes HTML tag characters from a string
+     * @function stripTags
+     * @inner
+     * @param {string} htmlStr
+     * @returns {string} the cleaned string
+     * */
     function stripTags(htmlStr) {
         return htmlStr.replace(/(<([^>]+)>)/ig, "");
     }
 
 
 
-
+    /** Deprecated function to focus the browser on an input element and press enter, 
+     * using a timed set of interactions to simulate a user.
+     * @function pressEnter
+     * @inner
+     * @param elt - the element to pressEnter within
+     * @deprecated
+     * */
     function pressEnter(elt) {
         var timers = getTimingArray();
         var evtDown = new KeyboardEvent("keydown", {"keyCode": 13});
@@ -257,33 +304,68 @@ TRACKMENOT.TMNInjected = function() {
     }
     ;
 
-
-
-
+    /** Dispatch a keydown event on the first letter of the input string chara 
+     * into the input searchBox, simulating a keydown of that character on the keyboard.
+     * Used to type queries into the searchBox.
+     * @function downKey
+     * @inner
+     * @param {string} chara - a string to type the first letter of
+     * @param searchBox - the DOM element to dispatch the keyboardEvent to
+     * */ 
     function downKey(chara, searchBox) {
         var charCode = chara[chara.length - 1].charCodeAt(0);
         var evtDown = new KeyboardEvent("keydown", {"charCode": charCode});
         searchBox.dispatchEvent(evtDown);
     }
 
+    /** Dispatch a keypress event on the first letter of the input string chara 
+     * into the input searchBox, simulating a keypress of that character on the keyboard.
+     * Used to type queries into the searchBox.
+     * @function pressKey
+     * @inner
+     * @param {string} chara - a string to type the first letter of
+     * @param searchBox - the DOM element to dispatch the keyboardEvent to
+     * */ 
     function pressKey(chara, searchBox) {
         var charCode = chara[chara.length - 1].charCodeAt(0);
         var evtPress = new KeyboardEvent("keypress", {"charCode": charCode});
         searchBox.dispatchEvent(evtPress);
     }
 
+    /** Dispatch a "input" event into the input searchBox, Used in typing queries into the searchBox.
+     * @function inputChar
+     * @inner
+     * @param {string} chara - unused param
+     * @param searchBox - the DOM element to dispatch the input event to
+     * */ 
     function inputChar(chara, searchBox) {
         var ev = document.createEvent("Event");
         ev.initEvent("input", true, false);
         searchBox.dispatchEvent(ev);
     }
 
+    /** Dispatch a keyup event on the first letter of the input string chara 
+     * into the input searchBox, simulating a keyup/release of that character on the keyboard.
+     * Used to type queries into the searchBox.
+     * @function releaseKey
+     * @inner
+     * @param {string} chara - a string to release the first letter of
+     * @param searchBox - the DOM element to dispatch the keyup event to
+     * */ 
     function releaseKey(chara, searchBox) {
         var charCode = chara[chara.length - 1].charCodeAt(0);
         var evtUp = new KeyboardEvent("keyup", {"charCode": charCode});
         searchBox.dispatchEvent(evtUp);
     }
 
+    /** Dispatch a keyup event on the first letter of the input string chara 
+     * into the input searchBox, simulating a keyup/release of that character on the keyboard.
+     * Used to type queries into the searchBox.
+     * @function releaseKey
+     * @inner
+     * @param {string} chara - a string to release the first letter of
+     * @param searchBox - the DOM element to dispatch the keyup event to
+     * */ 
     function simulateClick(engine) {
 
         var clickIndex = roll(0, 9);
@@ -329,7 +411,14 @@ TRACKMENOT.TMNInjected = function() {
     }
 
 
-
+    /** Dispatch a keyup event on the first letter of the input string chara 
+     * into the input searchBox, simulating a keyup/release of that character on the keyboard.
+     * Used to type queries into the searchBox.
+     * @function releaseKey
+     * @inner
+     * @param {string} chara - a string to release the first letter of
+     * @param searchBox - the DOM element to dispatch the keyup event to
+     * */ 
     function clickButton(searchButton) {
         // var button = get_button(engine.id, document);
         searchButton.click();
@@ -339,7 +428,12 @@ TRACKMENOT.TMNInjected = function() {
     }
 
 
-
+    /** Given a browser DOM element, perform a sequence of mousedown, mouseup, and click events,
+     * timed to simulate a real user.
+     * @function clickElt
+     * @inner
+     * @param elt - the element to click on
+     * */ 
     function clickElt(elt) {
         if (!elt)
             return;
@@ -359,8 +453,18 @@ TRACKMENOT.TMNInjected = function() {
 
     }
 
-
-
+    /** Used to get search button and boxes, by checking each element
+     * of a particular type (e.g. "input") with a particular attribute name (e.g. "name"),
+     * with a search engine specific value indicating implicitly it serves a designated 
+     * search engine role in the interface.
+     * @function getElementsByAttrValue
+     * @inner
+     * @param dom - the document object model of a webpage
+     * @param {string} nodeType - the tag name of the type of node (e.g. "input")
+     * @param {string} attrName - the attribute name associated with a particular role-identifying value
+     * @param {string} nodeValue - the target value of the attribute
+     * @returns either the first matching element or null
+     * */
     function getElementsByAttrValue(dom, nodeType, attrName, nodeValue) {
         var outlines = dom.getElementsByTagName(nodeType);
         for (var i = 0; i < outlines.length; i++) {
@@ -370,7 +474,15 @@ TRACKMENOT.TMNInjected = function() {
         return null;
     }
 
-
+    /** Find all the matching words between a searchValue and the nextQuery.
+     * Used to maintain a consistent progression search value state as the query is entered,
+     * and prevent duplicate word entry.
+     * @function getCommonWords
+     * @inner
+     * @param {string} searchValue - the current value of the search box
+     * @param {string} nextQuery - the next query to send
+     * @returns {array} the array of matching words between the searchValue and nextQuery
+     * */
     function getCommonWords(searchValue, nextQuery) {
         var searched = searchValue.split(' ');
         var tosearch = nextQuery.split(' ');
@@ -381,6 +493,12 @@ TRACKMENOT.TMNInjected = function() {
         return result;
     }
 
+    /** Generates a random set of 5 timeout values between 0 and 30 milliseconds to create user like
+     * timing for keyboard interactions.
+     * @function getTimingArray
+     * @inner
+     * @returns {array} an array of 5 timeout values between 0 and 30 (JS numbers representing milliseconds)
+     * */
     function getTimingArray() {
         var timers = [];
         for (var i = 0; i < 5; i++) {
@@ -390,7 +508,17 @@ TRACKMENOT.TMNInjected = function() {
     }
 
 
-
+    /** Types a given query recursively until completing the query, and then clicks the search box to send it.
+     * @function typeQuery
+     * @inner
+     * @param {string} queryToSend - the query to send
+     * @param {string} currIndex - the index of what's been typed, within the queryToSend
+     * @param searchBox - the DOM search box
+     * @param {string} chara - the remaining untyped part of the queryToSend
+     * @param isIncr - unused input variable, set to false in the recursive case
+     * @param searchButton - the DOM searchButton element to click when the query has been completed typing
+     * @returns {array} an array of 5 timeout values between 0 and 30 (JS numbers representing milliseconds)
+     * */
     function typeQuery(queryToSend, currIndex, searchBox, chara, isIncr, searchButton) {
         var nextPress;
         tmnCurrentQuery = queryToSend;

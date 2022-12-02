@@ -3,9 +3,15 @@
         "include": [ "trackmenot.js", "tmn_search.js", "menu-script.js", "option-script.js" ]
     },
     "opts": {
-      "template": "docdash"
+      "template": "docdash",
+      "destination": "docs/"
+    },
+    "templates": {
+        "cleverLinks": false,
+        "monospaceLinks": false
     },
     "docdash": {
+        "sort": false,
         "search": true,
         "meta": {                       // Meta information options (mostly for search engines that have not indexed your site yet)
             "title": "TrackMeNot JS Docs",  // Also will be used as postfix to actualy page title, prefixed with object/document name
@@ -19,7 +25,8 @@
                 "class":"menu-item",
                 "id":"TMN Official Site"
             }
-        }
+        },
+        "scripts": ["./../.link-fixer.js"]
     }
     /*"templates": {
         "search": true,

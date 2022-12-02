@@ -27,13 +27,16 @@ var _ = api.i18n.getMessage;
 if (!TRACKMENOT) var TRACKMENOT = {};
 
 /** The TRACKMENOT.TMNSearch object, used as a high-level interface and manager 
- * for the core search functionality of the extension 
+ * for the core search functionality of the extension. Created in trackmenot.js.
  * @exports TRACKMENOT.TMNSearch 
  * @property {number} tmn_tab_id - the ID of the tab controlled by TMN for searches
+ * @property {Boolean} useIncrementals - constant setting for random possibility to search about the same topic / dummy query multiple times ("incremenetal" searches)
+ * @property {array} incQueries - variable used to set an incremental sequence of searches about the same topic / dummy query
  * @property {string} engine - the current search engine to search on
  * @property {string} prev_engine - the last engine used to send a search
  * @property {object} tmn_engines - an object containing each engine known to TMN, whether it is enabled for searches, and associated metadata (e.g. the engine's base search URL)
  * @property {object} TMNQueries - the dummy query strings for TMN to search with, organized by keys representing the method of query generation {@link typeoffeeds} ("rss", "extracted", "dhs")
+ * @property {array} zeit_queries - a preset array of query terms representative of a "zeitgeist"
  * @property {array} typeoffeeds - array of keynames for the dummy query generation methods in use
  * @property {array} tmnLogs - running log of all dummy queries searched, used to update local storage for display of search logs in options page
  * @property {string} burstEngine - the consistent search engine name for a sequence of "bursted" searches
@@ -44,17 +47,14 @@ if (!TRACKMENOT) var TRACKMENOT = {};
  * 
  * @property tmn_searchTimer - the setTimeout timer for scheduling the next search
  * @property {string} tmn_mode - the current search function mode - from the set {"timed", "recovery" (retrying when a search fails), or "burst"}
- * @property tmn_errTimeout - (deprecated/unused) a setTimeout timer 3*the search timeout to initiative error
+ * @property tmn_errTimeout - (deprecated - unused) a setTimeout timer 3*the search timeout to initiative error
  * @property {Boolean} tmn_scheduledSearch - status indicator for whether the next search has been scheduled
  * @property {Boolean} tmn_hasloaded - status indicator for whether or not the search results page from the current search has loaded
- * @property {String} currentTMNURL - the current search URL
+ * @property {string} currentTMNURL - the current search URL
  * @property currentUrlMap - deprecated/unused
- * @property useIncrementals 
  * @property debug_ - deprecated/unused
- * @property tmn_logged_id
- * @property incQueries
- * @property zeit_queries
- * @property last_log_id
+ * @property tmn_logged_id - id of the last logged search
+ * @property last_log_id - id of the last log request's search
  * */
 TRACKMENOT.TMNSearch = function () {
     var tmn_tab_id = -1;
@@ -103,10 +103,22 @@ TRACKMENOT.TMNSearch = function () {
         /cache/i, /similar/i, /login/i, /mail/i, /feed/i
     );
 
+    /** Utility function that replaces each newline character in string s with a space character " ".
+     * Used to clean generated dummy queries.
+     * @function trim
+     * @inner
+     * @param {string} s - the string to trim
+     * */
     function trim(s) {
         return s.replace(/\n/g, '');
     }
 
+    /** Logs an error message in the console, marking it as from trackmenot.js.
+     * @function cerr
+     * @inner
+     * @param {string} msg - the error message
+     * @param {Exception} e - the exception object holding error information
+     * */
     function cerr(msg, e) {
         var txt = "[ERROR in trackmenot.js] " + msg;
         if (e) {
@@ -125,10 +137,21 @@ TRACKMENOT.TMNSearch = function () {
     //         console.log("DEBUG: " + msg);
     // }
 
+    /** Utility function that generates a random number between min and max, inclusive.
+     * @function roll
+     * @inner
+     * @param {Number} min - the minimum
+     * @param {Number} max - the maximum
+     * */
     function roll(min, max) {
         return Math.floor(Math.random() * (max + 1)) + min;
     }
 
+    /** Utility function that selects a random element of the input array.
+     * @function randomElt
+     * @inner
+     * @param {Array} array - the array from which to select a random element
+     * */
     function randomElt(array) {
         // console.log("Array length: " + array.length);
         var index = roll(0, array.length - 1);
@@ -138,6 +161,17 @@ TRACKMENOT.TMNSearch = function () {
 
     // Engine functions
 
+    /** Used (and redundantly defined) in tmn_search.js to get search button and boxes, by checking each element
+     * of a particular type (e.g. "input") with a particular attribute name (e.g. "name"),
+     * with a search engine specific value indicating implicitly it serves a designated 
+     * search engine role in the interface. Not used in trackmenot.js
+     * @function getElementsByAttrValue
+     * @inner
+     * @param dom - the document object model of a webpage
+     * @param {string} nodeType - the tag name of the type of node (e.g. "input")
+     * @param {string} attrName - the attribute name associated with a particular role-identifying value
+     * @param {string} nodeValue - the target value of the attribute
+     * */
     function getElementsByAttrValue(dom, nodeType, attrName, nodeValue) {
         var outlines = dom.getElementsByTagName(nodeType);
         for (var i = 0; i < outlines.length; i++) {
@@ -191,7 +225,7 @@ TRACKMENOT.TMNSearch = function () {
      * Finds an engine in tmn_engines with a given id
      * @function getEngineById
      * @inner
-     * @param {String} id - the engine id
+     * @param {string} id - the engine id
      * */
     function getEngineById(id) {
         return tmn_engines.list.filter(function (a) {
@@ -200,6 +234,11 @@ TRACKMENOT.TMNSearch = function () {
     }
 
 
+    /** 
+     * Generates an ID to insert into the Yahoo search URL
+     * @function getYahooId
+     * @inner
+     * */
     function getYahooId() {
         var id = "A0geu";
         while (id.length < 24) {
@@ -214,16 +253,23 @@ TRACKMENOT.TMNSearch = function () {
                 continue;
             }
             if (num < 10) {
-                id += String.fromCharCode(num + 48);
+                id += string.fromCharCode(num + 48);
                 continue;
             }
             num += lower ? 87 : 55;
-            id += String.fromCharCode(num);
+            id += string.fromCharCode(num);
         }
         //console.log("GENERATED ID="+id);
         return id;
     }
 
+    /** 
+     * Duplicate function to randomElt, chooses a random element of input array, used once
+     * in scheduleNextSearch
+     * @function chooseElt
+     * @inner
+     * @param {Array} arr - the input array
+     * */
     function chooseElt(arr) {
         return arr[Math.floor(Math.random() * arr.length)];
     }
@@ -317,8 +363,8 @@ TRACKMENOT.TMNSearch = function () {
 
     // End of tab functions
 
-    /** Monitor user browsing behavior, and if the user searches,
-     * fire a burst of obfuscation searches.
+    /** Create a webNavigation listener to monitor user browsing behavior, 
+     * and if the user searches on an enabled engine, fire a burst of obfuscation searches.
      * @function monitorBurst
      * @inner
      * */
@@ -358,6 +404,14 @@ TRACKMENOT.TMNSearch = function () {
 
     }
 
+    /** 
+     * Used as a callback function for every new page of user's browsing behavior
+     * to check if the user did a search on a TMN-enabled search engine.
+     * @function checkForSearchUrl
+     * @inner
+     * @param {string} url - the input url to check
+     * @returns {Array} either null if no match, or the length-4 array containing the .match(engine_regex)
+     * */
     function checkForSearchUrl(url) {
         var result = null;
         var eng;
@@ -386,16 +440,23 @@ TRACKMENOT.TMNSearch = function () {
     }
 
 
-
-
+    /** 
+     * Checks if TMN is in burst mode and has begun a burst of searches
+     * @function isBursting
+     * @inner
+     * @returns {Boolean} whether or not TMN is midway thru an active burst
+     * */
     function isBursting() {
         return (tmn_options.burstMode && (burstCount > 0));
     }
 
-
-
-
-
+    /** 
+     * Returns a query randomly by selecting a random query generation method
+     * and then choosing a random query from the selected generation method's dummy query list.
+     * @function randomQuery
+     * @inner
+     * @returns {string} the dummy query term
+     * */
     function randomQuery() {
         var qtype = randomElt(typeoffeeds);
         var queries = [];
@@ -410,6 +471,13 @@ TRACKMENOT.TMNSearch = function () {
         return term;
     }
 
+    /** 
+     * When a user saves a new set of RSS feeds in the options page, 
+     * fetch those RSS feeds and save options.
+     * @function validateFeeds
+     * @inner
+     * @param {Array} the list of RSS feeds
+     * */
     function validateFeeds(param) {
         TMNQueries.rss = [];
         tmn_options.feedList = param.feeds;
@@ -419,7 +487,14 @@ TRACKMENOT.TMNSearch = function () {
         saveOptions();
     }
 
-
+    /** 
+     * Deprecated function to extract keyphrases from search results 
+     * and add them to "extracted" dummy query list.
+     * @function extractQueries
+     * @inner
+     * @param {string} html - HTML body of search results
+     * @deprecated unused anywhere in the code
+     * */
     function extractQueries(html) {
         var forbiddenChar = new RegExp("^[ @#<>\"\\\/,;'�{}:?%|\^~`=]", "g");
         var splitRegExp = new RegExp('^[\\[\\]\\(\\)\\"\']', "g");
@@ -455,6 +530,12 @@ TRACKMENOT.TMNSearch = function () {
         addQuery(queryToAdd, TMNQueries.extracted);
     }
 
+    /** If the blacklist is enabled, check if a dummy query is in the blacklist.
+     * @function isBlackList
+     * @inner
+     * @param {string} term - the query to check
+     * @returns {Boolean} whether the term is in the blacklist (false if blacklist disabled)
+     * */
     function isBlackList(term) {
         if (!tmn_options.use_black_list) return false;
         var words = term.split(/\W/g);
@@ -465,6 +546,12 @@ TRACKMENOT.TMNSearch = function () {
         return false;
     }
 
+    /** Checks if a query term comes from a set of typical search navigation/bot-like terms (e.g. "Maps", "More")
+     * @function queryOk
+     * @inner
+     * @param {string} a- the query to check
+     * @returns {Boolean} if the query does not match any of the search nav/bot-like terms
+     * */
     function queryOk(a) {
         for (let i = 0; i < skipex.length; i++) {
             if (skipex[i].test(a))
@@ -473,6 +560,13 @@ TRACKMENOT.TMNSearch = function () {
         return true;
     }
 
+    /** Checks a search query term's validity and if it passes, adds it to the input queryList
+     * @function addQuery
+     * @inner
+     * @param {string} term - the query to add
+     * @param {array} queryList - the list of queries
+     * @returns {Boolean} if the query passed checks and was added successfully 
+     * */
     function addQuery(term, queryList) {
         var noniso = new RegExp("[^a-zA-Z0-9_.\ \\u00C0-\\u00FF+]+", "g");
 
@@ -501,8 +595,13 @@ TRACKMENOT.TMNSearch = function () {
         return true;
     }
 
-
-    // returns # of keywords added
+    /** Takes a title from an RSS feed and removes unwanted characters
+     * @function filterKeyWords
+     * @inner
+     * @param {string} rssTitles - an rss title pulled from an rss feed
+     * @returns {string} addStr - the cleaned rss title string
+     * */
+    // old comment: returns # of keywords added
     function filterKeyWords(rssTitles) {
         var addStr = ""; //tmp-debugging
         var forbiddenChar = new RegExp("[ @#<>\"\\\/,;'�{}:?%|\^~`=]+", "g");
@@ -531,6 +630,14 @@ TRACKMENOT.TMNSearch = function () {
         return addStr;
     }
 
+    /** Checks the result of fetched RSS feed xmlData, and if valid iterates through 
+     * and adds each RSS feed title to the RSS feed query list.
+     * @function addRssTitles
+     * @inner
+     * @param xmlData - the xmlData from an RSS feed fetch
+     * @param {string} feedUrl - the RSS feed URL
+     * @returns {number} 0 if unsuccessful, 1 if successful
+     * */
     // returns # of keywords added
     function addRssTitles(xmlData, feedUrl) {
         var rssTitles = "";
@@ -560,7 +667,10 @@ TRACKMENOT.TMNSearch = function () {
         return 1;
     }
 
-
+    /** Loads the DHS keywords and fills them into the DHS keyword query list.
+     * @function readDHSList
+     * @inner
+     * */
     function readDHSList() {
         TMNQueries.dhs = [];
         var i = 0;
@@ -588,7 +698,12 @@ TRACKMENOT.TMNSearch = function () {
         req.get();
     }
 
-
+    /** Attempts to fetch an RSS feed using an XMLHttpRequest, and adds its contents to
+     * the RSS dummy query list if successful.
+     * @function doRssFetch
+     * @inner
+     * @param {string} feedUrl - the RSS feed's URL
+     * */
     function doRssFetch(feedUrl) {
         if (!feedUrl) return;
         console.log("Feed Url: " + feedUrl);
@@ -617,7 +732,8 @@ TRACKMENOT.TMNSearch = function () {
 
     }
 
-    /** Randomly shuffle the words of input queryWords, and add them to incQueries. Does not return anything.
+    /** Randomly shuffle the words of input queryWords, and add them to incQueries. 
+     * Mutates the incQueries array; does not return a value.
      * @function getSubQuery
      * @inner
      * @param {Array} queryWords - words from a dummy query string
@@ -643,7 +759,7 @@ TRACKMENOT.TMNSearch = function () {
     /** Get a randomQuery() and replace any newline characters with spaces 
      * @function getQuery
      * @inner
-     * @returns {String} term - the cleaned query term 
+     * @returns {string} term - the cleaned query term 
      * */
     function getQuery() {
         var term = randomQuery();
@@ -683,7 +799,7 @@ TRACKMENOT.TMNSearch = function () {
     /** Update the TMN badge-icon to display the next search.
      * @function updateOnSend
      * @inner
-     * @param {String} queryToSend - the next dummy query string
+     * @param {string} queryToSend - the next dummy query string
      * */
     function updateOnSend(queryToSend) {
         try {
@@ -703,12 +819,12 @@ TRACKMENOT.TMNSearch = function () {
     /** Given a set of possible parameters of the current status of TMN, assemble a logEntry and return it.
      * @function createLog
      * @inner
-     * @param {String} type - the type of logEntry, from {"URLMap", "error"}
-     * @param {String} engine - the current search engine
-     * @param {String} [mode] - the current running mode tmn_mode of TMN
-     * @param {String} [query] - the current dummy query string
-     * @param {String} [id] - Deprecated: logEntry id, unused/deprecated
-     * @param {String} [asearch] - the URL for "a search"
+     * @param {string} type - the type of logEntry, from {"URLMap", "error"}
+     * @param {string} engine - the current search engine
+     * @param {string} [mode] - the current running mode tmn_mode of TMN
+     * @param {string} [query] - the current dummy query string
+     * @param {string} [id] - Deprecated: logEntry id, unused/deprecated
+     * @param {string} [asearch] - the URL for "a search"
      * @returns {Object} logEntry
      *  */
     function createLog(type, engine, mode, query, id, asearch) {
@@ -741,6 +857,7 @@ TRACKMENOT.TMNSearch = function () {
                 if (queryWords.length > 3) {
                     getSubQuery(queryWords);
                     if (useIncrementals) {
+                        // simulate "unsatisfied" user searches about the same topic between 1 and 4 times
                         var unsatisfiedNumber = roll(1, 4);
                         for (var n = 0; n < unsatisfiedNumber - 1; n++)
                             getSubQuery(queryWords);
@@ -761,7 +878,12 @@ TRACKMENOT.TMNSearch = function () {
         }
     }
 
-
+    /** Sends a search term to the current search engine, either through TMN's tab if enabled, 
+     * or through an XMLHttpRequest (with reschedule error handling), and updates the TMN badge icon.
+     * @function sendQuery
+     * @inner
+     * @param {string} queryToSend - the query to send
+     * */
     function sendQuery(queryToSend) {
         tmn_scheduledSearch = false;
         //Q: where is engine set, as used here?
@@ -819,6 +941,8 @@ TRACKMENOT.TMNSearch = function () {
             currentTMNURL = queryURL;
         }
     }
+
+
     function randomWalk(url) {
         //adding user interaction: users search something, and machine click one of the result. 
         const xhr = new XMLHttpRequest();
@@ -861,7 +985,7 @@ TRACKMENOT.TMNSearch = function () {
 
     function getLinksFromHtml(txt) {
         var parser = new DOMParser();
-        var htmlDoc = parser.parseFromString(txt, "text/html")
+        var htmlDoc = parser.parseFromstring(txt, "text/html")
         // console.log(htmlDoc.getElementsByTagName("a"));
         var arr = [], l = htmlDoc.links;
         for (var i = 0; i < l.length; i++) {
@@ -880,7 +1004,7 @@ TRACKMENOT.TMNSearch = function () {
      * them to make a sendable search URL  
      * @function queryToURL
      * @inner
-     * @param {String} url - the TMN-encoded base-URL for a search engine
+     * @param {string} url - the TMN-encoded base-URL for a search engine
      * @param {query} query - the dummy query term generated by TMN
      * */
     function queryToURL(url, query) {
@@ -895,7 +1019,11 @@ TRACKMENOT.TMNSearch = function () {
 
 
 
-
+    /** Called after a search error in sendQuery, updates the TMN badge icon UI status, and
+     * schedules the next search after a 60s pause (if TMN is enabled)
+     * @function rescheduleOnError
+     * @inner
+     * */
     function rescheduleOnError() {
         var pauseAfterError = Math.max(2 * tmn_options.timeout, 60000);
         tmn_mode = 'recovery';
@@ -913,6 +1041,11 @@ TRACKMENOT.TMNSearch = function () {
             scheduleNextSearch(pauseAfterError);
     }
 
+    /** After a search completes, scheduleNextSearch with the appropriate timeout delay,
+     * either the burstTimeout if in burst mode or the typical timeout set in tmn_options. 
+     * @function reschedule
+     * @inner
+     * */
     function reschedule() {
         var delay = tmn_options.timeout;
 
@@ -930,7 +1063,12 @@ TRACKMENOT.TMNSearch = function () {
         }
     }
 
-
+    /** If not bursting, modulates the delay with a random offset, chooses a random search engine,
+     * and calls the next search after a timeout. If bursting, continue the burst.
+     * @function scheduleNextSearch
+     * @inner
+     * @param {number} delay - the delay in milliseconds to precede the next search
+     * */
     //Cleaning stop here
     function scheduleNextSearch(delay) {
         if (!tmn_options.enabled) return;
@@ -952,7 +1090,12 @@ TRACKMENOT.TMNSearch = function () {
         tmn_searchTimer = window.setTimeout(doSearch, delay);
     }
 
-    //Q: does Burst mode detect searches correctly?
+    /** Sets the burst engine (the user search engine) and randomly chooses how many
+     * searches to burst, between 3 and 10 inclusive.
+     * @function enterBurst
+     * @inner
+     * @param {string} burst_engine - the engine the user searched with, to burst searches on
+     * */
     function enterBurst(burst_engine) {
         if (!tmn_options.burstMode) return;
         console.log("Entering burst mode for engine: " + burst_engine);
@@ -966,6 +1109,10 @@ TRACKMENOT.TMNSearch = function () {
         burstCount = roll(3, 10);
     }
 
+    /** Save the current options, engines, and generated queries to local storage.
+     * @function saveOptions
+     * @inner
+     * */
     function saveOptions() {
         console.log("Save option within trackmenot.js: " + JSON.stringify(tmn_options));
 
@@ -977,7 +1124,10 @@ TRACKMENOT.TMNSearch = function () {
         console.log(getStorage("options_tmn", logGotItem));
     }
 
-
+    /** Disables TMN in tmn_options, deletes the TMN tab, updates the TMN badge icon UI, and clears the search timers.
+     * @function stopTMN
+     * @inner
+     * */
     function stopTMN() {
         console.log("stopTMN(): stopping TMN");z
         tmn_options.enabled = false;
@@ -998,11 +1148,22 @@ TRACKMENOT.TMNSearch = function () {
         window.clearTimeout(tmn_errTimeout);
     }
 
+    /** Formats single digit time values into two-digit time strings.
+     * @function formatNum
+     * @inner
+     * @param {number} val - a time number
+     * */
     function formatNum(val) {
         if (val < 10) return '0' + val;
         return val;
     }
 
+    /** Given an input log entry, if logs are enabled, get the current time & date and add them to the entry,
+     * then add the entry to the logs and save the logs to local storage.
+     * @function add_log
+     * @inner
+     * @param {object} entry - the log entry to add
+     * */
     function add_log(entry) {
         if (tmn_options.disableLogs) return;
         try {
@@ -1022,6 +1183,10 @@ TRACKMENOT.TMNSearch = function () {
         api.storage.local.set({ "logs_tmn": tmnLogs });
     }
 
+    /** Tries to send a click event to the last search engine in the TMN tab.
+     * @function sendClickEvent
+     * @inner
+     * */
     function sendClickEvent() {
         if (!prev_engine) return;
         console.log("Will send click event on: " + prev_engine);
@@ -1039,6 +1204,11 @@ TRACKMENOT.TMNSearch = function () {
         }
     }
 
+    /** Schedules the first search with a 4s delay, adds a webNavigation listener for burst mode,
+     * and adds a listener to remove all logs when the window closes, if saving logs is disabled.
+     * @function startTMN
+     * @inner
+     * */
     function startTMN() {
         scheduleNextSearch(4000);
         monitorBurst();
@@ -1049,7 +1219,15 @@ TRACKMENOT.TMNSearch = function () {
 
     }
 
-
+    /** Parses requests from the extension and serves the response.
+     * Requests include: ["tmnLog", "updateStatus", "getURLMap", "setURLMap", "tmn" (a subset of requests)]
+     * "tmn" => ["currentURL", "pageLoaded", "tmnError", "isActiveTab", "TMNValideFeeds" - calls validateFeeds on the request.param]
+     * @function handleRequest
+     * @inner
+     * @param {object} request
+     * @param {object} sender
+     * @param {object} sendResponse
+     * */
     function handleRequest(request, sender, sendResponse) {
         if (request.tmnLog) {
             if ((request.tmnID) && (request.tmnID <= last_log_id)) {
@@ -1133,6 +1311,12 @@ TRACKMENOT.TMNSearch = function () {
 
     }
 
+    /** Sets the default options for TMN in the tmn_options object, 
+     * including the timeout, blacklist, and feedlist.
+     * Also sets (among other variables) the tmn_id, the id for the current search.
+     * @function setDefaultOptions
+     * @inner
+     * */
     function setDefaultOptions() {
         tmn_options.enabled = true;
         tmn_options.timeout = 6000;
@@ -1148,6 +1332,11 @@ TRACKMENOT.TMNSearch = function () {
 
     }
 
+    /** Initializes the query lists - zeitgeist queries come from a pre-set static list of queries,
+     * and RSS queries are loaded from RSS feeds. If DHS queries are enabled, these are loaded.
+     * @function initQueries
+     * @inner
+     * */
     function initQueries() {
         typeoffeeds = ['zeitgeist', 'rss'];
 
@@ -1169,6 +1358,11 @@ TRACKMENOT.TMNSearch = function () {
         }
     }
 
+    /** Callback function for getStorage that logs an error to the console.
+     * @function onError
+     * @inner
+     * @param error
+     * */
     function onError(error) {
         console.log(`Error: ${error}`);
     }
@@ -1176,7 +1370,9 @@ TRACKMENOT.TMNSearch = function () {
     //from https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage/StorageArea/get
     /** wrapper for console.log to pass as a callback function when getting items from local storage 
      * @function logGotItem
-     * @inner */
+     * @inner 
+     * @param item
+     * */
     function logGotItem(item) {
         console.log(item);
     }
@@ -1201,11 +1397,20 @@ TRACKMENOT.TMNSearch = function () {
 		}   
 	}
 
+    /** Sets the tmn_engines variable to the default_engines constant.
+     * @function setDefaultEngines
+     * @inner
+     * */
     function setDefaultEngines() {
         tmn_engines = default_engines;
     }
 
-
+    /** Restores tmn_options to values from local storage, initializes the query lists (if using RSS feeds),
+     * refreshes the TMN tab status, and updates the TMN badge icon UI.
+     * @function restoreOptions
+     * @inner
+     * @param item - the saved local storage options
+     * */
     function restoreOptions(item) {
         tmn_options = item;
         console.log("Restore: " + tmn_options.enabled);
@@ -1235,6 +1440,12 @@ TRACKMENOT.TMNSearch = function () {
 
     }
 
+    /** Applies new options to the search behavior (e.g., generating a new set of queries given a changed
+     * list of RSS feeds).
+     * @function updateOptions
+     * @inner
+     * @param item - the new TMN options
+     * */
     function updateOptions(item) {
         var tmnID = tmn_options.tmn_id; //hack to prevent tmnID from becoming null, until request_id incrementing is moved to logging from options
         tmn_options = item;
@@ -1290,6 +1501,11 @@ TRACKMENOT.TMNSearch = function () {
         }
     }
 
+    /** Sets the query lists to restored query list values from local storage.
+     * @function restoreQueries
+     * @inner
+     * @param item
+     * */
     function restoreQueries(item) {
         if (item) {
             TMNQueries = item;
@@ -1303,8 +1519,10 @@ TRACKMENOT.TMNSearch = function () {
             handleRequest(request, sender, sendResponse);
         },
 
-        /** called on api.storage.onChanged event listener, should update options and engines with new values 
-         * @callback
+        /** called on api.storage.onChanged event listener, updates options and engines with new values 
+         * @function _logStorageChange
+         * @inner
+         * @param {array} items - new values of stored TMN objects
          * */
         _logStorageChange: function (items) {
             console.log('detected a change in api.storage within trackmenot.js');
@@ -1320,7 +1538,9 @@ TRACKMENOT.TMNSearch = function () {
         },
         
         /** callback function called on extension startup with contents of local storage for engines, options, logs, and gen_queries 
-         * @callback
+         * @function _restoreTMN
+         * @inner
+         * @param {array} items - items from local storage
          * */
         _restoreTMN: function (items) {
             if (!items["engines_tmn"]) {
@@ -1356,23 +1576,42 @@ TRACKMENOT.TMNSearch = function () {
 
         },
 
-
+        /** 
+         * @function _getEngine
+         * @inner
+         * @returns {string} engine - the current search engine
+         * */
         _getEngine: function () {
             return engine;
         },
 
 
-
+        /** 
+         * @function _getQueries
+         * @inner
+         * @returns {object} TMNQueries - the dummy query strings for TMN to search with, organized by keys representing the method of query generation {@link typeoffeeds} ("rss", "extracted", "dhs")
+         * */
         _getQueries: function () {
 
             return TMNQueries;
         },
 
+        /** Wrapper function to retrieve a set of values from local storage and feed them to a given callback function.
+         * @function _getStorage
+         * @inner
+         * @param {array} keys - an array of keys (names of variables) to retrieve from local storage
+         * @param {function} callback
+         * */
         _getStorage: function (keys, callback) {
             getStorage(keys, callback);
         },
 
 
+        /** Sets all engines and options to their default values, and re-initializes the query lists,
+         * then saves the default values to local storage.
+         * @function _resetSettings
+         * @inner
+         * */
         _resetSettings: function () {
             setDefaultEngines();
             setDefaultOptions();
@@ -1393,6 +1632,12 @@ TRACKMENOT.TMNSearch = function () {
 
         },
 
+        /** Checks if a given deleted tab's ID matches the TMN tab id, and if so, 
+         * marks the TMN tab as deleted by setting tmn_tab_id to -1.
+         * @function _preserveTMNTab
+         * @inner
+         * @param {number} tab_id - the deleted tab's ID
+         * */
         _preserveTMNTab: function (tab_id) {
             if (tmn_tab_id === tab_id) {
                 tmn_tab_id = -1;
