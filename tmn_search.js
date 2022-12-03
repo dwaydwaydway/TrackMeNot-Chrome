@@ -61,6 +61,7 @@ TRACKMENOT.TMNInjected = function() {
      * properties of a yahoo ad. Always returns false
      * @function testAd_yahoo
      * @inner
+     * @deprecated
      * @param {string} anchorClass
      * @param {string} anchorlink
      * @returns {Boolean} false
@@ -70,19 +71,27 @@ TRACKMENOT.TMNInjected = function() {
         //return (anchorClass === '\"yschttl spt\"' || anchorClass === 'yschttl spt');
     }
 
-    /** Deprecated function to check anchorClass and anchorlink for characteristic
-     * properties of a yahoo ad. Always returns false
-     * @function testAd_yahoo
+    /** Checks anchorClass and anchorlink for characteristic
+     * properties of a aol ad.
+     * @function testAd_aol
      * @inner
      * @param {string} anchorClass
      * @param {string} anchorlink
-     * @returns {Boolean} false
+     * @returns {Boolean}
      * */
     var testAd_aol = function(anchorClass, anchorlink) {
         return (anchorClass === '\"find\"' || anchorClass === 'find'
                 && anchorlink.indexOf('https') !== 0 && anchorlink.indexOf('aol') < 0);
     }
 
+    /** Checks anchorClass and anchorlink for characteristic
+     * properties of a Bing ad.
+     * @function testAd_bing
+     * @inner
+     * @param {string} anchorClass
+     * @param {string} anchorlink
+     * @returns {Boolean}
+     * */
     var testAd_bing = function(anchorClass, anchorlink) {
         return (anchorlink
                 && anchorlink.indexOf('http') === 0
@@ -93,13 +102,24 @@ TRACKMENOT.TMNInjected = function() {
                 && anchorlink.indexOf('microsoft') < 0
                 && anchorlink.indexOf('WindowsLiveTranslator') < 0)
     }
-
+    /** Check anchorClass and anchorlink for characteristic
+     * properties of a Baidu ad.
+     * @function testAd_baidu
+     * @inner
+     * @param {string} anchorClass
+     * @param {string} anchorlink
+     * @returns {Boolean}
+     * */
     var testAd_baidu = function(anchorClass, anchorlink) {
         return (anchorlink
                 && anchorlink.indexOf('baidu') < 0
                 && anchorlink.indexOf('https') !== 0);
     }
-
+    /** Tries to find the Google button four different attrValues, returns the button or undefined.
+     * @function getButton_google
+     * @inner
+     * @returns button DOM element or undefined
+     * */
     var getButton_google = function(  ) {
         var button = getElementsByAttrValue(document, 'button', 'name', 'btnG');
         if (!button)
@@ -111,38 +131,90 @@ TRACKMENOT.TMNInjected = function() {
             
         return button;
     }
+    /** Tries to find the Yahoo button byAttrValue
+     * @function getButton_yahoo
+     * @inner
+     * @returns button DOM element or undefined
+     * */
     var getButton_yahoo = function(  ) {
         return getElementsByAttrValue(document, 'input', 'class', 'sbb');
     };
+    /** Tries to find the Bing button by DOM element id
+     * @function getButton_bing
+     * @inner
+     * @returns button DOM element or undefined
+     * */
     var getButton_bing = function(  ) {
         return document.getElementById('sb_form_go');
     };
+    /** Tries to find the AOL button by DOM element id
+     * @function getButton_aol
+     * @inner
+     * @returns button DOM element or undefined
+     * */
     var getButton_aol = function(  ) {
         return document.getElementById('csbbtn1');
     };
+    /** Tries to find the Baidu button by attrValue
+     * @function getButton_aol
+     * @inner
+     * @returns button DOM element or undefined
+     * */
     var getButton_baidu = function(  ) {
         return getElementsByAttrValue(document, 'input', 'value', '????');
     };
 
-
-
+    /** Tries to find the Google SearchBox by AttrValue
+     * @function SearchBox_google
+     * @inner
+     * @returns SearchBox DOM element or undefined
+     * */
     var SearchBox_google = function( ) {
         return getElementsByAttrValue(document, 'input', 'name', 'q');
     };
+    /** Tries to find the Yahoo SearchBox by element id
+     * @function SearchBox_yahoo
+     * @inner
+     * @returns SearchBox DOM element or undefined
+     * */
     var SearchBox_yahoo = function(  ) {
         return document.getElementById('yschsp');
     };
+    /** Tries to find the Bing SearchBox by element id
+     * @function SearchBox_bing
+     * @inner
+     * @returns SearchBox DOM element or undefined
+     * */
     var SearchBox_bing = function(  ) {
         return document.getElementById('sb_form_q');
     };
+    /** Tries to find the AOL SearchBox by element id
+     * @function SearchBox_aol
+     * @inner
+     * @returns SearchBox DOM element or undefined
+     * */
     var SearchBox_aol = function(  ) {
         return document.getElementById('csbquery1');
     };
+    /** Tries to find the Baidu SearchBox by element id
+     * @function SearchBox_baidu
+     * @inner
+     * @returns SearchBox DOM element or undefined
+     * */
     var SearchBox_baidu = function(  ) {
         return document.getElementById('kw');
     };
 
-
+    /** Wrapper function to test if a link is an ad for an input search engine,
+     * returns the result of the corresponding ad test function for the input engine,
+     * or null if the input engine does not have a testAd function defined.
+     * @function testad
+     * @inner
+     * @param {string} engine_id
+     * @param {string} anchorClass
+     * @param {string} anchorlink
+     * @returns the boolean result of the testAd function or null
+     * */
     var testad = function(engine_id,anchorClass, anchorlink) {
         switch (engine_id) {
             case 'google':
@@ -165,6 +237,14 @@ TRACKMENOT.TMNInjected = function() {
         }
     };
     
+    /** Wrapper function to get the SearchBox for a given search engine,
+     * returns the result of the corresponding SearchBox function for the engine or null if the
+     * engine does not have a SearchBox function defined.
+     * @function get_box
+     * @inner
+     * @param {string} engine_id
+     * @returns the result of the SearchBox function (DOM element if successful) or null
+     * */
     var get_box = function(engine_id) {
         switch (engine_id) {
             case 'google':
@@ -187,6 +267,16 @@ TRACKMENOT.TMNInjected = function() {
         }
     };
 
+    /** Wrapper function to test if a link is an ad for a given search engine,
+     * returns the result of a correspond ad test function for the engine or null if the
+     * engine does not have a testAd function defined.
+     * @function testad
+     * @inner
+     * @param {string} engine_id
+     * @param {string} anchorClass
+     * @param {string} anchorlink
+     * @returns the boolean result of the testAd function or null
+     * */
     var get_button = function(engine_id) {
         console.log("searching for button with engine.id = " + engine_id);
         switch (engine_id) {
@@ -587,7 +677,14 @@ TRACKMENOT.TMNInjected = function() {
         }
     }
 
-
+    /** Given a base URL and a query term, add the query term to the URL, replacing TMN placeholder characters and
+     * encoding the URL. Turns the query term to all lower case letters with 90% probability.
+     * @function queryToURL
+     * @inner
+     * @param {string} url - the base URL for a search engine
+     * @param {string} query - the dummy query term to send
+     * @returns {string} the encoded URL
+     * */
     function queryToURL(url, query) {
         if (Math.random() < 0.9)
             query = query.toLowerCase();
@@ -599,7 +696,16 @@ TRACKMENOT.TMNInjected = function() {
         return encodedUrl;
     }
 
-
+    /** Send a query by constructing and sending the query URL, either to the runtime
+     * if TMN is not in tab mode, or after simulating user typing and clicking on the searchBox.
+     * @function sendQuery
+     * @inner
+     * @param {string} engine - the search engine
+     * @param {string} queryToSend - the dummy query term to send
+     * @param {string} tmn_mode - the search mode of TMN (only used here for logging)
+     * @param {string} url - the base URL for the search engine
+     * @returns null
+     * */
     function sendQuery(engine, queryToSend, tmn_mode, url) {
         console.log("[tmn_search.js] sendQuery");
         var host;
@@ -673,7 +779,14 @@ TRACKMENOT.TMNInjected = function() {
 
 
 
-
+    /** Always returns true, in order to allow new search engines. 
+     * Checks that a host is within the predefined list of engines, 
+     * used to stop actions after pageLoad for hosts outside of the four original
+     * search engines. 
+     * @function isSafeHost
+     * @inner
+     * @param {string} host
+     * @return {Boolean}  */
     function isSafeHost(host) {
         for (var i = 0; i < engines_regex.length; i++) {
             var eng = engines_regex[i];
@@ -687,7 +800,11 @@ TRACKMENOT.TMNInjected = function() {
     }
 
 
-
+    /** Sends a "pageLoaded" tmn request object to the runtime environment,
+     * with the HTML body of the current page attached.  
+     * @function sendPageLoaded
+     * @inner
+     * */
     function sendPageLoaded() {
         var req = {};
         req.tmn = "pageLoaded";
@@ -699,11 +816,20 @@ TRACKMENOT.TMNInjected = function() {
         api.runtime.sendMessage(req);
     }
 
-
+    /** Sends a tmn log request object to the runtime
+     * @function add_log
+     * @inner
+     * @param {string} msg - the log message to add
+     * */
     function add_log(msg) {
         api.runtime.sendMessage({tmnLog: msg});
     }
 
+    /** Sends a tmn updateStatus request object to the runtime
+     * @function updateStatus
+     * @inner
+     * @param {string} msg - the status update message
+     * */
     function updateStatus(msg) {
         var req = {
             "updateStatus": msg
@@ -711,7 +837,11 @@ TRACKMENOT.TMNInjected = function() {
         api.runtime.sendMessage(req);
     }
 
-
+    /** Gets the current URL by sending a currentURL request to the runtime,
+     * with a callback wrapper function that calls setTMNCurrentURL with the response url.
+     * @function getTMNCurrentURL
+     * @inner
+     * */
     function getTMNCurrentURL() {
         api.runtime.sendMessage({
             tmn: "currentURL"
@@ -721,6 +851,11 @@ TRACKMENOT.TMNInjected = function() {
         });
     }
 
+    /** Set the current url by sending an input URL to the runtime in a "url" message object
+     * @function setTMNCurrentURL
+     * @inner
+     * @param {string} url 
+     * */
     function setTMNCurrentURL(url) {
         tmnCurrentURL = url;
         console.log("Current TMN loc: " + tmnCurrentURL);
@@ -733,6 +868,14 @@ TRACKMENOT.TMNInjected = function() {
 
 
     return {
+        /** Receives all messages to tmn_search.js's TRACKMENOT.TMNInjected runtime. 
+         * Only handles tmnQuery requests (to send a query) and click_eng requests (to simulate a click).
+         * @function setTMNCurrentURL
+         * @inner
+         * @param {object} request
+         * @param sender - unused param
+         * @param sendResponse - unused param
+         * */
         handleRequest: function(request, sender, sendResponse) {
             if (request.tmnQuery) {
                 last_request_id = current_request_id;
@@ -781,6 +924,14 @@ TRACKMENOT.TMNInjected = function() {
             }
             return; // snub them.
         },
+        /** Called on tmn_search.js initialization to check if there is an active TMN tab, 
+         * by querying the runtime with a TMN message "isActiveTab", and confirming the response to trigger a hasLoaded function call.
+         * @function setTMNCurrentURL
+         * @inner
+         * @param {object} request
+         * @param sender - unused param
+         * @param sendResponse - unused param
+         * */
         checkIsActiveTab: function() {
             api.runtime.sendMessage({
                 tmn: "isActiveTab"
@@ -791,6 +942,10 @@ TRACKMENOT.TMNInjected = function() {
                 }
             });
        },
+       /** Callback function for checkIsActiveTab tmn_search.js initialization function, sets the current TMN URL.
+        * @function hasLoaded
+        * @inner
+        * */
         hasLoaded: function() {
             var host = window.location.host;
             if (!isSafeHost(host)) {
