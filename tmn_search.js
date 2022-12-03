@@ -300,13 +300,14 @@ TRACKMENOT.TMNInjected = function() {
         }
     };
 
+    //unused/deprecated mapping of search engines to their homepage URLs
     var engine2homepage = {
         'google': 'https://www.google.com/', 
         'yahoo': 'https://www.yahoo.com/', 
         'bing': 'https://www.bing.com/', 
         'baidu': 'https://www.baidu.com/'
     }
-
+    //regex to identify host for isSafeHost function, basically deprecated (function always returns true to accomodate additional search engines)
     var engines_regex = [
         {
             'id': 'google',
