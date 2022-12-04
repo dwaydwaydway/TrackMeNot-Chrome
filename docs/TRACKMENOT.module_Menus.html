@@ -3,7 +3,7 @@
 <head>
     
     <meta charset="utf-8">
-    <title>menu-script.js - TrackMeNot JS Docs</title>
+    <title>Menus - TrackMeNot JS Docs</title>
     
     
     
@@ -40,139 +40,924 @@
 
 <div id="main">
     
-    <h1 class="page-title">menu-script.js</h1>
+    <h1 class="page-title">Menus</h1>
     
 
     
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>var api;
-if (chrome == undefined) {
-		api = browser;
-	} else {
-		api = chrome;
-	}
+</header>
 
-if(!TRACKMENOT) var TRACKMENOT = {};
+<article>
+    
+        <div class="container-overview">
+        
+            
 
-/** The TrackMeNot menu displayed from its browser icon.
- * @exports TRACKMENOT.Menus
- * @property {object} options - the current TMN options
- * */
-TRACKMENOT.Menus = function() {
-  var options = null;
-  
-
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>The TrackMeNot menu displayed from its browser icon.</li></ul></dd>
+    
 
     
-  /** Logs an input msg to the console 
-   * @funciton _cout
-   * @inner
-   * @param {string} msg - the message to log
-   * */
-  function  _cout (msg) { console.log(msg);  }
-  
-
-
-  return { 
-      /** Opens a link to the TMN FAQ page.
-       * @function showHelp
-       * @inner
-       * */
-   showHelp: function() {
-    window.open("http://www.cs.nyu.edu/trackmenot/faq.html")
-  },
-   /** Toggles whether TMN is enabled or disabled in options, saves new options to local storage,
-    * and reloads the menu HTML.
-    * @function toggleOnOff
-    * @inner
-    * */
-   toggleOnOff: function() {   
-       console.log("toggling option in menu");
-       options.enabled = !options.enabled      
-
-       console.log("saving options in menu-script.js");
-       console.log(JSON.stringify(options));
-       api.storage.local.set({"options_tmn":options});
-       TRACKMENOT.Menus.onLoadMenu({"options_tmn":options});
-       console.log("new options");
-       getStorage("options_tmn", logGotItem);
-
-   },
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="menu-script.js.html">menu-script.js</a>, <a href="menu-script.js.html#line14">line 14</a>
+    </li></ul></dd>
     
-   /** Changes the state of the useTab option, sets a new set of options in local storage, amnd reloads the HTML for the menu 
-    * @function toggleTabFrame
-    * @inner
-    * */
-   toggleTabFrame: function() {
-        options.useTab = !options.useTab
-        api.storage.local.set({"options_tmn":options});
-        TRACKMENOT.Menus.onLoadMenu({"options_tmn":options});  
-      },
 
-      /** Loads the UI HTML for the menu, based on the values of the options within the input items.
-       * @function onLoadMenu
-       * @inner
-       * @param {object} items - container object for options_tmn to load into the menu
-       * */
-     onLoadMenu: function( items ) {
-         options = items["options_tmn"];
-      
-		if ( options.enabled) {
-			 $("#trackmenot-enabled").html('Disable');
-			 $("#trackmenot-img-enabled").attr("src", "images/skin/off_icon.png");
-		}  else {
-			 $("#trackmenot-enabled").html('Enable');
-			 $("#trackmenot-img-enabled").attr("src", "images/skin/on_icon.png");
-		}
-			
-		if (options.useTab)  $("#trackmenot-menu-useTab").html('&lt;img  width="16" height="16" src="images/skin/stealth_icon.png" /> Stealth');
-		else $("#trackmenot-menu-useTab").html('&lt;img  width="16" height="16" src="images/skin/tab_icon.png" /> Tab')
-      }
-  }
-}(); 
+    
 
-document.addEventListener('DOMContentLoaded', function () {
-  $("#trackmenot-menu-useTab").click(TRACKMENOT.Menus.toggleTabFrame);
-  $("#trackmenot-enabled").click(TRACKMENOT.Menus.toggleOnOff);
-  $("#trackmenot-menu-win").click(function() { window.open(api.extension.getURL('options.html'));});
-  $("#trackmenot-menu-help").click(TRACKMENOT.Menus.showHelp)
-  api.storage.local.get(["options_tmn"],TRACKMENOT.Menus.onLoadMenu)
-});
-/** Callback function that logs the word "Error" to the console.
- * @function onError
- * */
-function onError(){
-  console.log("Error");
-}
+    
 
-/**from https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage/StorageArea/get 
- * Logs a got item from local storage to the console
- * @function logGotItem
- * @param item - the item to log to the console
- * */
-function logGotItem(item) {
-    console.log(item);
-}
-/** Get items by input keys from local storage, and pass them to the input callback function.
- * @param {array} keys - a list of local storage item keys
- * @param {function} callback - callback function to pass gotten items
- * */
-function getStorage(keys,callback) {
-    try {
-        let gettingItem = api.storage.local.get(keys);
-        gettingItem.then(callback, onError);
-    } catch (ex) {
-        api.storage.local.get(keys,callback); 
-    }   
-}
-</code></pre>
-        </article>
-    </section>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the current TMN options</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+            
+                <div class="description usertext">The TrackMeNot menu displayed from its browser icon.</div>
+            
+
+            
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="~showHelp"><span class="type-signature type-signature-inner">(inner) </span>showHelp<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Opens a link to the TMN FAQ page.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="menu-script.js.html">menu-script.js</a>, <a href="menu-script.js.html#line30">line 30</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~toggleOnOff"><span class="type-signature type-signature-inner">(inner) </span>toggleOnOff<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Toggles whether TMN is enabled or disabled in options, saves new options to local storage,and reloads the menu HTML.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="menu-script.js.html">menu-script.js</a>, <a href="menu-script.js.html#line37">line 37</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~toggleTabFrame"><span class="type-signature type-signature-inner">(inner) </span>toggleTabFrame<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Changes the state of the useTab option, sets a new set of options in local storage, amnd reloads the HTML for the menu</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="menu-script.js.html">menu-script.js</a>, <a href="menu-script.js.html#line55">line 55</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~onLoadMenu"><span class="type-signature type-signature-inner">(inner) </span>onLoadMenu<span class="signature">(items)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Loads the UI HTML for the menu, based on the values of the options within the input items.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="menu-script.js.html">menu-script.js</a>, <a href="menu-script.js.html#line65">line 65</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>items</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">container object for options_tmn to load into the menu</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~onError"><span class="type-signature type-signature-inner">(inner) </span>onError<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Callback function that logs the word "Error" to the console.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="menu-script.js.html">menu-script.js</a>, <a href="menu-script.js.html#line94">line 94</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~logGotItem"><span class="type-signature type-signature-inner">(inner) </span>logGotItem<span class="signature">(item)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>from https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage/StorageArea/get Logs a got item from local storage to the console</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="menu-script.js.html">menu-script.js</a>, <a href="menu-script.js.html#line101">line 101</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>item</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the item to log to the console</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="~getStorage"><span class="type-signature type-signature-inner">(inner) </span>getStorage<span class="signature">(keys, callback)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Get items by input keys from local storage, and pass them to the input callback function.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="menu-script.js.html">menu-script.js</a>, <a href="menu-script.js.html#line113">line 113</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>keys</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">array</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">a list of local storage item keys</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">callback function to pass gotten items</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

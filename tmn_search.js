@@ -156,7 +156,7 @@ TRACKMENOT.TMNInjected = function() {
         return document.getElementById('csbbtn1');
     };
     /** Tries to find the Baidu button by attrValue
-     * @function getButton_aol
+     * @function getButton_baidu
      * @inner
      * @returns button DOM element or undefined
      * */
@@ -208,6 +208,9 @@ TRACKMENOT.TMNInjected = function() {
     /** Wrapper function to test if a link is an ad for an input search engine,
      * returns the result of the corresponding ad test function for the input engine,
      * or null if the input engine does not have a testAd function defined.
+     * 
+     * According the TMN paper, ad clicks are suppressed, so presumably this should 
+     * return false for ads and true for non-ads, given its usage in simulateClick.
      * @function testad
      * @inner
      * @param {string} engine_id
@@ -267,15 +270,13 @@ TRACKMENOT.TMNInjected = function() {
         }
     };
 
-    /** Wrapper function to test if a link is an ad for a given search engine,
-     * returns the result of a correspond ad test function for the engine or null if the
-     * engine does not have a testAd function defined.
-     * @function testad
+    /** Wrapper function to get the button for a given search engine by the input engine_id,
+     * returns the result of the corresponding getButton function for the engine or null if the
+     * engine does not have a getButton function defined.
+     * @function get_button
      * @inner
      * @param {string} engine_id
-     * @param {string} anchorClass
-     * @param {string} anchorlink
-     * @returns the boolean result of the testAd function or null
+     * @returns the button/result of the getButton function or null
      * */
     var get_button = function(engine_id) {
         console.log("searching for button with engine.id = " + engine_id);
@@ -449,13 +450,11 @@ TRACKMENOT.TMNInjected = function() {
         searchBox.dispatchEvent(evtUp);
     }
 
-    /** Dispatch a keyup event on the first letter of the input string chara 
-     * into the input searchBox, simulating a keyup/release of that character on the keyboard.
-     * Used to type queries into the searchBox.
-     * @function releaseKey
+    /** Called by a TMN click_eng request from the handleRequest function.
+     * Clicks on a random link in the search results, (avoiding ads? or clicking specifically on them).
+     * @function simulateClick
      * @inner
-     * @param {string} chara - a string to release the first letter of
-     * @param searchBox - the DOM element to dispatch the keyup event to
+     * @param {string} engine - the search engine
      * */ 
     function simulateClick(engine) {
 
@@ -502,13 +501,11 @@ TRACKMENOT.TMNInjected = function() {
     }
 
 
-    /** Dispatch a keyup event on the first letter of the input string chara 
-     * into the input searchBox, simulating a keyup/release of that character on the keyboard.
-     * Used to type queries into the searchBox.
-     * @function releaseKey
+    /** Clicks on an input searchButton by calling .click(), then calls sendPageLoaded().
+     * Used in typeQuery to complete a search request after typing the query term.
+     * @function clickButton
      * @inner
-     * @param {string} chara - a string to release the first letter of
-     * @param searchBox - the DOM element to dispatch the keyup event to
+     * @param searchButton
      * */ 
     function clickButton(searchButton) {
         // var button = get_button(engine.id, document);
@@ -871,7 +868,7 @@ TRACKMENOT.TMNInjected = function() {
     return {
         /** Receives all messages to tmn_search.js's TRACKMENOT.TMNInjected runtime. 
          * Only handles tmnQuery requests (to send a query) and click_eng requests (to simulate a click).
-         * @function setTMNCurrentURL
+         * @function handleRequest
          * @inner
          * @param {object} request
          * @param sender - unused param
@@ -927,7 +924,7 @@ TRACKMENOT.TMNInjected = function() {
         },
         /** Called on tmn_search.js initialization to check if there is an active TMN tab, 
          * by querying the runtime with a TMN message "isActiveTab", and confirming the response to trigger a hasLoaded function call.
-         * @function setTMNCurrentURL
+         * @function checkIsActiveTab
          * @inner
          * @param {object} request
          * @param sender - unused param
