@@ -1,13 +1,13 @@
 TrackMeNot-Chrome
 =================
 
-TrackMeNot portage on Chrome
+TrackMeNot portage on Chrome - now deploys to both Chrome and Firefox
 
 Getting Set Up
 clone the repository
 `git clone {repo URL}`
 
-Building the Project
+<h3>Building the Project</h3>
 
 to build for Firefox:
 install web-ext globally:
@@ -25,7 +25,7 @@ navigate to `chrome://extensions/`
 then click `Load unpacked`
 and select the `TrackMeNot-Chrome` directory
 
-Docs
+<h4>Docs</h4>
 The docs were built with a combination of JSDoc https://jsdoc.app and the docdash jsdoc template https://github.com/clenemt/docdash
 
 install jsdoc (globally on your system):
@@ -39,3 +39,5 @@ build the docs:
 
 to view the docs, open
 `out/index.html`
+
+<h4>Known bugs:</h4>

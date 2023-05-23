@@ -1,9 +1,9 @@
 Documentation for the TMN codebase:
 
-- include architecture diagram here
+![Architecture diagram for TMN](tmn-architecture-diagram.png "TMN Architecture")
 
-- link to official site
+- [TMN Website](trackmenot.io)
 
-- link to github
+- [TMN GitHub Repo (forked)](https://github.com/dwaydwaydway/TrackMeNot-Chrome)
 
-documented by Nicholas A. B., nicholasab.com
+documented by Nicholas A. B.
