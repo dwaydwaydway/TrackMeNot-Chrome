@@ -1,0 +1,24 @@
+{
+  "name": "trackmenot-chrome",
+  "version": "0.0.0",
+  "description": "TrackMeNot-Chrome =================",
+  "main": "trackmenot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate-docs": "jsdoc --configure .jsdoc_config.json -R docs_homepage.md -t ./node_modules/docdash --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dwaydwaydway/TrackMeNot-Chrome.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dwaydwaydway/TrackMeNot-Chrome/issues"
+  },
+  "homepage": "https://github.com/dwaydwaydway/TrackMeNot-Chrome#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "docdash": "^2.0.0"
+  }
+}
