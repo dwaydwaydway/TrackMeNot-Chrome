@@ -51,10 +51,11 @@ TRACKMENOT.TMNInjected = function() {
      * @returns {Boolean} if the inputs look like a Google ad
      * */
     var testAd_google = function(anchorClass, anchorlink) {
-        return (anchorlink
-                && (anchorClass === 'l' || anchorClass === 'l vst')
-                && anchorlink.indexOf('http') === 0
-                && anchorlink.indexOf('https') !== 0);
+        // return (anchorlink
+        //         && (anchorClass === 'l' || anchorClass === 'l vst')
+        //         && anchorlink.indexOf('http') === 0
+        //         && anchorlink.indexOf('https') !== 0);
+        return !anchorlink.startsWith("http") || anchorlink.includes("//ad.") || anchorlink.includes("google") || anchorlink.includes("yahoo") || anchorlink.includes("search") || anchorlink.includes("..");
     }
 
     /** Deprecated function to check anchorClass and anchorlink for characteristic
@@ -67,8 +68,8 @@ TRACKMENOT.TMNInjected = function() {
      * @returns {Boolean} false
      * */
     var testAd_yahoo = function(anchorClass, anchorlink) {
-		return false;
-        //return (anchorClass === '\"yschttl spt\"' || anchorClass === 'yschttl spt');
+		// return false;
+        return !anchorlink.startsWith("http") || anchorlink.includes("//ad.") || anchorlink.includes("google") || anchorlink.includes("yahoo") || anchorlink.includes("search") || anchorlink.includes("..");
     }
 
     /** Checks anchorClass and anchorlink for characteristic
@@ -93,6 +94,7 @@ TRACKMENOT.TMNInjected = function() {
      * @returns {Boolean}
      * */
     var testAd_bing = function(anchorClass, anchorlink) {
+        return !anchorlink.startsWith("http") || anchorlink === "#" || anchorlink.includes("//ad.") || anchorlink.includes("google") || anchorlink.includes("bing") || anchorlink.includes("search") || anchorlink.includes("..");;
         return (anchorlink
                 && anchorlink.indexOf('http') === 0
                 && anchorlink.indexOf('https') !== 0
@@ -210,15 +212,15 @@ TRACKMENOT.TMNInjected = function() {
      * or null if the input engine does not have a testAd function defined.
      * 
      * According the TMN paper, ad clicks are suppressed, so presumably this should 
-     * return false for ads and true for non-ads, given its usage in simulateClick.
+     * return false for ads and true for non-ads, given its previous usage in simulateClick.
      * @function testad
      * @inner
      * @param {string} engine_id
      * @param {string} anchorClass
      * @param {string} anchorlink
-     * @returns the boolean result of the testAd function or null
+     * @returns the boolean result of the isAd function or null
      * */
-    var testad = function(engine_id,anchorClass, anchorlink) {
+    var isAd = function(engine_id,anchorClass, anchorlink) {
         switch (engine_id) {
             case 'google':
                 return testAd_google(anchorClass, anchorlink);
@@ -450,14 +452,36 @@ TRACKMENOT.TMNInjected = function() {
         searchBox.dispatchEvent(evtUp);
     }
 
+    function getLinksFromHtml(txt) {
+        var parser = new DOMParser();
+        var htmlDoc = parser.parseFromString(txt, "text/html")
+        // console.log(htmlDoc.getElementsByTagName("a"));
+        var arr = [], l = htmlDoc.links;
+        for (var i = 0; i < l.length; i++) {
+            const str = l[i].href;
+            if (str.substring(0, 5) === 'https' && !str.includes("google") && !str.includes("gov"))
+                arr.push(l[i].href);
+        }
+        // Shuffle array
+        const shuffled = arr.sort(() => 0.5 - Math.random());
+        // Get sub-array of first n elements after shuffled
+        arr = shuffled.slice(0, 10);
+        return arr;
+    }
+
+    function walk2(link) {
+        window.location.href = link;
+        setTMNCurrentURL(link);
+    }
+
     /** Called by a TMN click_eng request from the handleRequest function.
-     * Clicks on a random link in the search results, (avoiding ads? or clicking specifically on them).
+     * Clicks on a random link in the search results
      * @function simulateClick
      * @inner
      * @param {string} engine - the search engine
      * */ 
-    function simulateClick(engine) {
-
+    async function simulateClick(engine) {
+        const currentUrl_ = window.location.href;
         var clickIndex = roll(0, 9);
         if (!document || document === "undefined")
             return;
@@ -466,38 +490,63 @@ TRACKMENOT.TMNInjected = function() {
 
         var anchorLink, anchorClass;
         var j = 0;
-        for (var i = 0; i < pageLinks.length; i++) {
+        // Shuffle array
+        pageLinks = [].slice.call(pageLinks).sort(() => 0.5 - Math.random());
+        // Get sub-array of first n elements after shuffled
+        // pageLinks = pageLinks.slice(0, 10);
+
+        for (var i = 0; i <  pageLinks.length; i++) {
             if (pageLinks[i].hasAttribute("orighref"))
                 anchorLink = pageLinks[i].getAttribute("orighref");
             else
                 anchorLink = pageLinks[i].getAttribute("href");
             anchorClass = pageLinks[i].getAttribute("class");
-            var link = stripTags(pageLinks[i].innerHTML);
-            if (testad(engine.id, anchorClass, anchorLink)) {
-                j++;
-                if (j === clickIndex) {
-                    var logEntry = JSON.stringify({
+            // var link = stripTags(pageLinks[i].innerHTML);
+            // add_log({
+            //     'type': 'ERROR',
+            //     'query': "[simulateClick() in tmn_search.js] link: " + pageLinks[i],
+            //     'engine': engine, 
+            // });
+
+            
+            if (anchorLink && !dd(engine.id, anchorClass, anchorLink)) {
+                try {
+                    // clickElt(pageLinks[i]);
+                    // pageLinks[i].click();
+                    // window.location.href = anchorLink;
+                    // setTMNCurrentURL(anchorLink);
+                    await new Promise(resolve => setTimeout(walk2, 1000, anchorLink));
+                    // setTimeout(walk2, 0, anchorLink);
+                    console.log("link clicked: " + anchorLink);
+                    var logEntry = {
                         'type': 'click',
+                        'mode': "click",
                         "engine": engine.id,
-                        'query': link,
+                        'newUrl': anchorLink+"",
                         'id': current_request_id
-                    });
+                    };
+                    j++;
                     add_log(logEntry);
-                    try {
-                        clickElt(pageLinks[i]);
-                        console.log("link clicked");
-                    } catch (e) {
-                        add_log({
-                            'type': 'ERROR',
-                            'query': "[ERROR in tmn_search.js] error opening click-through request for: " + e.message,
-                            'engine': engine, 
-                        });
-                        console.log("error opening click-through request for " + e);
-                    }
-                    return;
+                } catch (e) {
+                    add_log({
+                        'type': 'ERROR',
+                        'query': "[ERROR in tmn_search.js] error opening click-through request for: " + e.message,
+                        'engine': engine, 
+                    });
+                    console.log("error opening click-through request for " + e);
                 }
             }
+            if(j >= 3){
+                // window.location.href = currentUrl_;
+                // setTMNCurrentURL(currentUrl_);
+                // setTimeout(walk2, 1000, currentUrl_);
+                return;
+            }
         }
+        // window.location.href = currentUrl_;
+        // setTMNCurrentURL(currentUrl_);
+        // setTimeout(walk2, 1000, currentUrl_);
+        return;
     }
 
 
@@ -714,18 +763,17 @@ TRACKMENOT.TMNInjected = function() {
         }
         var reg = new RegExp(engine.host, 'g');
         var encodedUrl = queryToURL(url, queryToSend);
-        var logEntry = JSON.stringify({
-            'type': 'query',
-            "engine": engine.id,
-            'mode': tmn_mode,
-            'query': queryToSend,
-            'id': current_request_id
-        });
-        add_log(logEntry);
         updateStatus(queryToSend);
         if (host === "" || !host.match(reg)) {
             try {
                 window.location.href = encodedUrl;
+                add_log({
+                    'type': 'query',
+                    "engine": engine.id,
+                    'mode': tmn_mode,
+                    'query': queryToSend,
+                    'id': current_request_id
+                });
                 return encodedUrl;
             } catch (ex) {
                 console.log("Caught exception: " + ex);
@@ -751,12 +799,26 @@ TRACKMENOT.TMNInjected = function() {
                 searchBox.selectionEnd = 0;
                 var chara = new Array();
                 typeQuery(queryToSend, 0, searchBox, chara, false, searchButton);
+                add_log({
+                    'type': 'query',
+                    "engine": engine.id,
+                    'mode': tmn_mode,
+                    'query': queryToSend,
+                    'id': current_request_id
+                });
                 return null;
             } else {
                 tmnCurrentURL = encodedUrl;
                 console.log("The searchbox can not be found ");
                 try {
                     window.location.href = encodedUrl;
+                    add_log({
+                        'type': 'query',
+                        "engine": engine.id,
+                        'mode': tmn_mode,
+                        'query': queryToSend,
+                        'id': current_request_id
+                    });
                     return encodedUrl;
                 } catch (ex) {
                     console.log("Caught exception: " + ex);
@@ -820,7 +882,7 @@ TRACKMENOT.TMNInjected = function() {
      * @param {string} msg - the log message to add
      * */
     function add_log(msg) {
-        api.runtime.sendMessage({tmnLog: msg});
+        api.runtime.sendMessage({tmnLog: JSON.stringify(msg)});
     }
 
     /** Sends a tmn updateStatus request object to the runtime
@@ -865,6 +927,8 @@ TRACKMENOT.TMNInjected = function() {
     }
 
 
+    
+    
     return {
         /** Receives all messages to tmn_search.js's TRACKMENOT.TMNInjected runtime. 
          * Only handles tmnQuery requests (to send a query) and click_eng requests (to simulate a click).
@@ -875,12 +939,24 @@ TRACKMENOT.TMNInjected = function() {
          * @param sendResponse - unused param
          * */
         handleRequest: function(request, sender, sendResponse) {
+            if(request.RWurl){
+                try{
+                    window.location.href = request.RWurl;
+                    setTMNCurrentURL(request.RWurl);
+                }catch(ex){
+                    add_log({
+                        'type': 'ERROR',
+                        'query': "[ERROR in request.RWurl] " + ex.message,
+                        'engine': engine, 
+                    });
+                }
+            }
             if (request.tmnQuery) {
                 last_request_id = current_request_id;
-                if (last_request_id >= request.tmnID) {
-                    console.log("Duplicate queries ignored");
-                    return;
-                }
+                // if (last_request_id >= request.tmnID) {
+                //     console.log("Duplicate queries ignored");
+                //     return;
+                // }
                 var engine = JSON.parse(request.tmnEngine);
                 console.log("Received: " + request.tmnQuery + " on engine: " + engine.id + " mode: " + request.tmnMode + " tmn id " + request.tmnID);
                 
@@ -958,5 +1034,24 @@ TRACKMENOT.TMNInjected = function() {
 }();
 TRACKMENOT.TMNInjected.checkIsActiveTab();
 api.runtime.onMessage.addListener(TRACKMENOT.TMNInjected.handleRequest);
+api.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      console.log(sender.tab ?
+                  "from a content script:" + sender.tab.url :
+                  "from the extension");
+      if (request.RWurl){
+        try{
+            window.location.href = request.RWurl;
+            setTMNCurrentURL(request.RWurl);
+        }catch(ex){
+            add_log({
+                'type': 'ERROR',
+                'query': "[ERROR in request.RWurl] " + ex.message,
+                'engine': engine, 
+            });
+        }
+      }
+    }
+  );
 
 

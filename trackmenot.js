@@ -289,7 +289,7 @@ TRACKMENOT.TMNSearch = function () {
         if (useT === tmn_options.useTab) return;
         console.log("detected change in useTab value");
         //ERR: this doesn't seem to get called / the change isn't detected
-        tmn_options.useTab= useT;
+        tmn_options.useTab = useT;
 
         if (useT) {
             createTab();
@@ -318,6 +318,11 @@ TRACKMENOT.TMNSearch = function () {
         tmn_tab_id = -1;
     }
 
+    function deleteRWTab() {
+        api.tabs.remove(randomwalk_tab_id);
+        randomwalk_tab_id = -1;
+    }
+  
     /** Attempts to create a TMN search tab.
      * @function createTab
      * @inner
@@ -330,7 +335,7 @@ TRACKMENOT.TMNSearch = function () {
             api.tabs.create({
                 'active': false,
                 'url': 'https://www.google.com'
-            }, function (e) {iniTab(e, pendingRequest)});
+            }, function (e) { iniTab(e, pendingRequest) });
 
         } catch (ex) {
             add_log({
@@ -358,6 +363,46 @@ TRACKMENOT.TMNSearch = function () {
         }
     }
 
+
+    function createRWTab() {
+        if (!tmn_options.useTab || randomwalk_tab_id !== -1) {
+            return;
+        } else {
+            console.log('Creating tab for Randomwalk');
+            add_log({
+                'type': 'ERROR',
+                'query': "[createRWTab] Creating tab for Randomwalk"
+            });
+            try {
+                api.tabs.create({
+                    'active': false,
+                    'url': 'https://www.google.com'
+                }, function (e) { iniRWTab(e) });
+
+            } catch (ex) {
+                add_log({
+                    'type': 'ERROR',
+                    'query': '[ERROR in trackmenot.js] Can no create TMN tab:' + ex.message,
+                    'engine': engine,
+                });
+                cerr('Can no create TMN tab:', ex);
+            }
+        }
+    }
+
+    function iniRWTab(tab) {
+        console.log("[iniRWTab] tab = " + JSON.stringify(tab));
+        randomwalk_tab_id = tab.id;
+        add_log({
+            'type': 'randomwalk_tab_id',
+            'query': "[createRWTab] randomwalk_tab_id = " + randomwalk_tab_id
+        });
+
+        // if (pendingRequest !== null) {
+        //     api.tabs.sendMessage(randomwalk_tab_id, pendingRequest);
+        //     console.log('Message sent to the tab: ' + randomwalk_tab_id + ' : ' + JSON.stringify(pendingRequest));
+        // }
+    }
 
 
 
@@ -496,7 +541,7 @@ TRACKMENOT.TMNSearch = function () {
      * @deprecated unused anywhere in the code
      * */
     function extractQueries(html) {
-        var forbiddenChar = new RegExp("^[ @#<>\"\\\/,;'�{}:?%|\^~`=]", "g");
+        var forbiddenChar = new RegExp("^[ @#<>\"\\\/,;'ï¿½{}:?%|\^~`=]", "g");
         var splitRegExp = new RegExp('^[\\[\\]\\(\\)\\"\']', "g");
 
         if (!html) {
@@ -604,7 +649,7 @@ TRACKMENOT.TMNSearch = function () {
     // old comment: returns # of keywords added
     function filterKeyWords(rssTitles) {
         var addStr = ""; //tmp-debugging
-        var forbiddenChar = new RegExp("[ @#<>\"\\\/,;'�{}:?%|\^~`=]+", "g");
+        var forbiddenChar = new RegExp("[ @#<>\"\\\/,;'ï¿½{}:?%|\^~`=]+", "g");
         var splitRegExp = new RegExp('[\\[\\]\\(\\)\\"\']+', "g");
         var wordArray = rssTitles.split(forbiddenChar);
 
@@ -616,7 +661,7 @@ TRACKMENOT.TMNSearch = function () {
                         wordArray[i + 1].match(splitRegExp))) {
                         var nextWord = wordArray[i + 1]; // added new check here -dch
                         if (nextWord !== nextWord.toLowerCase()) {
-                            nextWord = trim(nextWord.toLowerCase().replace(/\s/g, '').replace(/[(<>"'�&]/g, ''));
+                            nextWord = trim(nextWord.toLowerCase().replace(/\s/g, '').replace(/[(<>"'ï¿½&]/g, ''));
                             if (nextWord.length > 1) {
                                 word += ' ' + nextWord;
                             }
@@ -884,7 +929,7 @@ TRACKMENOT.TMNSearch = function () {
      * @inner
      * @param {string} queryToSend - the query to send
      * */
-    function sendQuery(queryToSend) {
+    async function sendQuery(queryToSend) {
         tmn_scheduledSearch = false;
         //Q: where is engine set, as used here?
         var url = getEngineById(engine).urlmap;
@@ -912,10 +957,13 @@ TRACKMENOT.TMNSearch = function () {
                 api.tabs.sendMessage(tmn_tab_id, TMNReq);
                 console.log('Message sent to the tab: ' + tmn_tab_id + ' : ' + JSON.stringify(TMNReq));
             }
+            var queryURL = queryToURL(url, queryToSend);
+            console.log("The encoded URL is " + queryURL);
+            randomWalk(queryURL, 0, roll(1, 5));
         } else {
             var queryURL = queryToURL(url, queryToSend);
             console.log("The encoded URL is " + queryURL);
-            randomWalk(queryURL);
+            randomWalk(queryURL, 0, roll(1, 5));
             var xhr = new XMLHttpRequest();
             xhr.open("GET", queryURL, true);
             xhr.onreadystatechange = function () {
@@ -943,61 +991,70 @@ TRACKMENOT.TMNSearch = function () {
     }
 
 
-    function randomWalk(url) {
-        //adding user interaction: users search something, and machine click one of the result. 
-        const xhr = new XMLHttpRequest();
-        console.log("This is Random Walk!!!!!!!!!!!!!!!");
-        xhr.open("GET", url, true);
-        xhr.send(null);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                var htmlText = xhr.responseText;
-                var arr = getLinksFromHtml(htmlText);
-                // debugger
-                // console.log("***********")
-                // console.log(arr)
-                randomWalk2(arr);
-            }
-        };
+    /** Given a int representing miliseconds, return a promise to resolve it in that amount of time*/
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    function randomWalk2(urlArr) {
-        //adding user interaction: users search something, and machine click one of the result.
-
-        // for (var i = 0; i < urlArr.length; i++) {
-        //     var url = urlArr[i];
-        //     const xhr = new XMLHttpRequest();
-        //     xhr.open("GET", url, true);
-        //     xhr.send(null);
-        // }
-        (function myLoop(i) {
-            setTimeout(function () {
-                var url = urlArr[i];
-                const xhr = new XMLHttpRequest();
-                xhr.open("GET", url, true);
-                xhr.send(null);
-                console.log("[Random walk on:]" + url)
-                //  decrement i and call myLoop again if i > 0
-                if (--i) myLoop(i);
-            }, 30000)
-        })(10);
+    /** A wrapper function for the sleep function so that we don't need to use await in the randomwalk function*/
+    async function sleepWrapper() {
+        await sleep(roll(1, 20) * 100);
     }
 
-    function getLinksFromHtml(txt) {
-        var parser = new DOMParser();
-        var htmlDoc = parser.parseFromstring(txt, "text/html")
-        // console.log(htmlDoc.getElementsByTagName("a"));
-        var arr = [], l = htmlDoc.links;
-        for (var i = 0; i < l.length; i++) {
-            const str = l[i].href;
-            if (str.substring(0, 5) === 'https' && !str.includes("google") && !str.includes("gov"))
-                arr.push(l[i].href);
+    /** A wrapper function for the api.tabs.executeScript api so that we don't need to use await in the randomwalk function*/
+    async function executeScriptWrapper(rwScript) {
+        await api.tabs.executeScript(randomwalk_tab_id, { code: rwScript });
+    }
+
+    /** A recursive randomwalk function that take three arguments. The url to visit, the number of hops performed, and the max amount of hops that is expected to be performed */
+    async function randomWalk(url, count, maxCount) {
+        if (count < maxCount) {
+            createRWTab();
+            getLinksFromUrl(url).then(nextUrls => {
+                if (nextUrls.length > 0) {
+                    const rwScript = "window.location.href = '" + nextUrls[0] + "';";
+                    executeScriptWrapper(rwScript);
+                    var logEntry = {
+                        'type': 'click',
+                        'mode': "click",
+                        "engine": engine.id,
+                        'newUrl': nextUrls[0] + "",
+                    };
+                    add_log(logEntry);
+                    sleepWrapper();
+                    randomWalk(nextUrls[0], count + 1, maxCount);
+                }
+            });
         }
-        // Shuffle array
-        const shuffled = arr.sort(() => 0.5 - Math.random());
-        // Get sub-array of first n elements after shuffled
-        arr = shuffled.slice(0, 10);
-        return arr;
+    }
+
+    /** Given a url of string type, return a list of shuffled urls in that url html page*/
+    function getLinksFromUrl(url) {
+        return fetch(url)
+            .then(
+                response => response.text() // .json(), .blob(), etc.
+            ).then(
+                htmlText => {
+                    var arr = []
+                    var parser = new DOMParser();
+                    var htmlDoc = parser.parseFromString(htmlText, "text/html")
+                    console.log("LINKS:");
+
+                    var l = htmlDoc.links;
+                    for (var i = 0; i < l.length; i++) {
+                        const str = l[i].href;
+                        if (str.substring(0, 5) === 'https' && !str.includes("google") && !str.includes("yahoo") && !str.includes("bing") && !str.includes("gov")) // && !str.includes("google") && !str.includes("yahoo") && !str.includes("bing") 
+                            arr.push(l[i].href);
+                    }
+                    // Shuffle array
+                    const shuffled = arr.sort(() => 0.5 - Math.random());
+                    // Get sub-array of first n elements after shuffled
+                    arr = shuffled.slice(0, 10);
+                    console.log(arr);
+                    return arr;
+                } // Handle here
+            );
+
     }
 
     /** Takes a TMN-encoded base-URL for a search engine, "url", and a search query string "query", and combines
@@ -1116,9 +1173,9 @@ TRACKMENOT.TMNSearch = function () {
     function saveOptions() {
         console.log("Save option within trackmenot.js: " + JSON.stringify(tmn_options));
 
-        api.storage.local.set({"options_tmn":tmn_options});
-        api.storage.local.set({"engines_tmn":tmn_engines});
-        api.storage.local.set({"gen_queries":TMNQueries});
+        api.storage.local.set({ "options_tmn": tmn_options });
+        api.storage.local.set({ "engines_tmn": tmn_engines });
+        api.storage.local.set({ "gen_queries": TMNQueries });
 
         console.log("new local options setting: ");
         console.log(getStorage("options_tmn", logGotItem));
@@ -1129,7 +1186,7 @@ TRACKMENOT.TMNSearch = function () {
      * @inner
      * */
     function stopTMN() {
-        console.log("stopTMN(): stopping TMN");z
+        console.log("stopTMN(): stopping TMN"); z
         tmn_options.enabled = false;
         deleteTab();
         try {
@@ -1217,9 +1274,33 @@ TRACKMENOT.TMNSearch = function () {
                 api.storage.local.set({ "logs_tmn": "" });
         });
 
-    }
 
-    /** Parses requests from the extension and serves the response.
+        browser.webRequest.onBeforeRequest.addListener(
+            autosuggestionListener,
+            { urls: ["https://www.google.com/complete/search?q&*", "https://www.google.com/complete/search?q=*"] },
+            ["blocking"]
+        );
+
+    }
+    function autosuggestionListener(details) {
+        let filter = browser.webRequest.filterResponseData(details.requestId);// intercept http request, and 
+        let decoder = new TextDecoder("utf-8");
+        let encoder = new TextEncoder();
+        filter.ondata = event => {
+            let str = decoder.decode(event.data, { stream: true });//get raw string
+            let searchSuggestionsArr = []
+            str.split('[').forEach((ele, index) => {//interpret the format of google auto suggestion
+
+                //remove non meaningful characters such as 'zh' and 'zf'
+                if (!ele.split('"')[1] || index === 1 || ele.split('"')[1] === "zh" || ele.split('"')[1] === "zf") return;
+                let autosuggestion = ele.split('"')[1];
+                // autosuggestion = decodeURIComponent(JSON.parse(autosuggestion));
+                var r = /\\u([\d\w]{4})/gi;// a pattern to be replaced by valid characters
+                autosuggestion = autosuggestion.replace(r, function (match, grp) {
+                    return String.fromCharCode(parseInt(grp, 16));
+                });
+
+     /** Parses requests from the extension and serves the response.
      * Requests include: ["tmnLog", "updateStatus", "getURLMap", "setURLMap", "tmn" (a subset of requests)]
      * "tmn" => ["currentURL", "pageLoaded", "tmnError", "isActiveTab", "TMNValideFeeds" - calls validateFeeds on the request.param]
      * @function handleRequest
@@ -1325,10 +1406,10 @@ TRACKMENOT.TMNSearch = function () {
         tmn_options.use_black_list = true;
         tmn_options.use_dhs_list = false;
         tmn_options.kwBlackList = ['bomb', 'porn', 'pornographie'];
-        tmn_options.saveLogs= true;
-        tmn_options.feedList = ['https://www.techmeme.com/index.xml','https://rss.slashdot.org/Slashdot/slashdot','https://feeds.nytimes.com/nyt/rss/HomePage'];
-        tmn_options.disableLogs= false;
-        tmn_options.tmn_id = 1;     
+        tmn_options.saveLogs = true;
+        tmn_options.feedList = ['https://www.techmeme.com/index.xml', 'https://rss.slashdot.org/Slashdot/slashdot', 'https://feeds.nytimes.com/nyt/rss/HomePage'];
+        tmn_options.disableLogs = false;
+        tmn_options.tmn_id = 1;
 
     }
 
@@ -1366,7 +1447,7 @@ TRACKMENOT.TMNSearch = function () {
     function onError(error) {
         console.log(`Error: ${error}`);
     }
-    
+
     //from https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage/StorageArea/get
     /** wrapper for console.log to pass as a callback function when getting items from local storage 
      * @function logGotItem
@@ -1383,19 +1464,19 @@ TRACKMENOT.TMNSearch = function () {
      * @function getStorage
      * @inner
      * */
-	function getStorage(keys,callback) {
-		try {
-			let gettingItem = api.storage.local.get(keys);
-			gettingItem.then(callback, onError);
-		} catch (ex) {
-      add_log({
+    function getStorage(keys, callback) {
+        try {
+            let gettingItem = api.storage.local.get(keys);
+            gettingItem.then(callback, onError);
+        } catch (ex) {
+            add_log({
                 'type': 'ERROR',
                 'query': "[ERROR in trackmenot.js] " + ex.message,
                 'engine': engine,
-      });
-			chrome.storage.local.get(keys,callback); 
-		}   
-	}
+            });
+            chrome.storage.local.get(keys, callback);
+        }
+    }
 
     /** Sets the tmn_engines variable to the default_engines constant.
      * @function setDefaultEngines
@@ -1451,9 +1532,9 @@ TRACKMENOT.TMNSearch = function () {
         tmn_options = item;
         tmn_options.tmn_id = tmnID;
         console.log("Restore: " + tmn_options.enabled); //??
-        
-        if ( tmn_options.feedList !== item.feedList  ){
-            tmn_options.feedList = item.feedList ;
+
+        if (tmn_options.feedList !== item.feedList) {
+            tmn_options.feedList = item.feedList;
 
             if (tmn_options.feedList) {
                 initQueries();
@@ -1462,8 +1543,8 @@ TRACKMENOT.TMNSearch = function () {
 
         if (tmn_options.enabled !== item.enabled) {
             tmn_options.enabled = item.enabled;
-            if (tmn_options.enabled) {startTMN();}
-            else {stopTMN();} //defensively putting braces here
+            if (tmn_options.enabled) { startTMN(); }
+            else { stopTMN(); } //defensively putting braces here
         }
 
         changeTabStatus(tmn_options.useTab);
@@ -1533,10 +1614,10 @@ TRACKMENOT.TMNSearch = function () {
             }
             if ('engines_tmn' in items) {
                 console.log('detected change in search engines');
-                setEngines(items.engines_tmn.newValue);  
+                setEngines(items.engines_tmn.newValue);
             }
         },
-        
+
         /** callback function called on extension startup with contents of local storage for engines, options, logs, and gen_queries 
          * @function _restoreTMN
          * @inner
@@ -1544,11 +1625,11 @@ TRACKMENOT.TMNSearch = function () {
          * */
         _restoreTMN: function (items) {
             if (!items["engines_tmn"]) {
-               console.log("could not find saved search engine options in local storage, setting default search engines");			
-               setDefaultEngines(); 
-            } else {       
-			   restoreQueries(items["gen_queries"]);
-               setEngines(items["engines_tmn"]); 
+                console.log("could not find saved search engine options in local storage, setting default search engines");
+                setDefaultEngines();
+            } else {
+                restoreQueries(items["gen_queries"]);
+                setEngines(items["engines_tmn"]);
             }
 
             if (!items["options_tmn"]) {
